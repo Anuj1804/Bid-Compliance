@@ -4,16 +4,30 @@ Rule engine - deterministic, transparent, inspectable.
 This is intentionally NOT a black-box ML model. Every weight is visible
 and explainable - if a judge asks "why did this bidder get 62/100",
 you can point to this exact table.
+
+IMPORTANT DISTINCTION:
+An UNVERIFIED result (we simply couldn't check something - e.g. OCR
+failed to extract a field) is treated as less severe than a confirmed
+MISMATCH (we checked, and it's genuinely wrong/inconsistent). Both are
+flagged and cost points, but a missing check should never score as badly
+as a confirmed problem - otherwise a bad OCR read looks identical to a
+real fraud signal, which would be misleading to the officer.
 """
 
-# Point deduction per flagged check. Tune these together as a team -
-# keep them visible/defensible, don't hide the reasoning.
+# Point deduction per flagged check, when the result is a confirmed
+# MISMATCH. Tune these together as a team - keep them visible/defensible,
+# don't hide the reasoning.
 DEDUCTIONS = {
     "GST": 25,
     "PAN": 15,
     "Udyam": 15,
-    "Blacklist": 100,  # effectively zeroes the score on a match
+    "Blacklist": 100,  # effectively zeroes the score on a confirmed match
 }
+
+# UNVERIFIED (couldn't check - e.g. missing/low-confidence extraction)
+# costs half of the confirmed-mismatch deduction. Still flagged for
+# officer attention, but not treated as proof of a real problem.
+UNVERIFIED_DEDUCTION_FACTOR = 0.5
 
 BASE_SCORE = 100
 
@@ -29,11 +43,20 @@ def calculate_compliance(check_results: list) -> dict:
 
     for check in check_results:
         deduction = 0
+
         if check["flag"]:
-            deduction = DEDUCTIONS.get(check["check"], 10)
+            base_deduction = DEDUCTIONS.get(check["check"], 10)
+
+            if check["status"] == "UNVERIFIED":
+                # We couldn't check - not the same as a confirmed problem.
+                deduction = round(base_deduction * UNVERIFIED_DEDUCTION_FACTOR)
+            else:
+                # Confirmed MISMATCH - full deduction applies.
+                deduction = base_deduction
+                if check.get("severity") == "CRITICAL":
+                    critical_hit = True
+
             score -= deduction
-            if check.get("severity") == "CRITICAL":
-                critical_hit = True
 
         breakdown.append({
             "check": check["check"],
