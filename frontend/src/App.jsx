@@ -1,22 +1,21 @@
-import Navbar from "./Components/landing/Navbar";
-import Hero from "./Components/landing/Hero";
-import ProblemSection from "./Components/landing/ProblemSection";
-import DashboardPreview from "./Components/landing/DashboardPreview";
-import Impact from "./Components/landing/Impact";
-import TrustBar from "./Components/landing/TrustBar";
-import Footer from "./Components/landing/Footer";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup"
 
 function App() {
   return (
-    <div>
-      <Navbar />
-      <Hero />
-      <ProblemSection />
-      <DashboardPreview />
-      <Impact />
-      <TrustBar />
-      <Footer />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
