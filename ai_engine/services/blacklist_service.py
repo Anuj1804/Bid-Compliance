@@ -8,24 +8,21 @@ bidder's other documents (PAN, company name).
 A match here is CRITICAL severity and should override the overall risk
 level to HIGH in the scoring engine, regardless of how clean every other
 check is.
-"""
 
-import json
-import os
+UPDATED (Option A, agreed with Person 4): reads live from the backend's
+BlacklistSandbox DB table via get_active_blacklist(), instead of the old
+static blacklist_sandbox.json file. This means an admin adding a company
+through the admin panel is immediately visible to this check on the very
+next /verify call — no stale JSON, no sync step needed.
+"""
 
 from status import result, SIMULATED, MISMATCH
 from name_match import names_match
-
-SANDBOX_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "blacklist_sandbox.json")
-
-
-def _load_blacklist() -> list:
-    with open(SANDBOX_PATH) as f:
-        return json.load(f)
+from backend.services.blacklist_provider import get_active_blacklist
 
 
 def check_blacklist(pan: str, company_name: str) -> dict:
-    blacklist = _load_blacklist()
+    blacklist = get_active_blacklist()
 
     for entry in blacklist:
         pan_match = entry["pan"] == pan
