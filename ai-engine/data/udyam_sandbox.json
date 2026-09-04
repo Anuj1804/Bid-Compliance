@@ -1,0 +1,30 @@
+{
+  "UDYAM-DL-03-0012345": {
+    "enterprise_name": "Bright Star Fabricators",
+    "category": "Small",
+    "registration_date": "2021-06-14",
+    "status": "Active",
+    "nic_code": "2591 - Manufacture of fabricated metal products"
+  },
+  "UDYAM-MH-05-0098765": {
+    "enterprise_name": "Sundar Precision Works",
+    "category": "Micro",
+    "registration_date": "2019-11-02",
+    "status": "Active",
+    "nic_code": "2811 - Manufacture of engines and turbines"
+  },
+  "UDYAM-KA-02-0054321": {
+    "enterprise_name": "Chandra Textiles Pvt Ltd",
+    "category": "Medium",
+    "registration_date": "2018-01-20",
+    "status": "Active",
+    "nic_code": "1311 - Preparation and spinning of textile fibres"
+  },
+  "UDYAM-TN-07-0011122": {
+    "enterprise_name": "Falcon Contractors Pvt Ltd",
+    "category": "Small",
+    "registration_date": "2017-08-09",
+    "status": "Expired",
+    "nic_code": "4100 - Construction of buildings"
+  }
+}
