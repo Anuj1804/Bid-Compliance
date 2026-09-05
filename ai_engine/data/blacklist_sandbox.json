@@ -1,0 +1,20 @@
+[
+  {
+    "pan": "AABCD1234E",
+    "name": "Suspicious Traders Ltd",
+    "reason": "Debarred by CVC — supply of substandard goods",
+    "debarred_until": "2027-03-15"
+  },
+  {
+    "pan": "AACFF5678G",
+    "name": "Falcon Contractors Pvt Ltd",
+    "reason": "Blacklisted — breach of contract terms",
+    "debarred_until": "2026-11-01"
+  },
+  {
+    "pan": "AAECR9012H",
+    "name": "Shreya Enterprises",
+    "reason": "Debarred — fraudulent documentation",
+    "debarred_until": "2028-01-20"
+  }
+]
