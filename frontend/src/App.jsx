@@ -6,6 +6,10 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Tenders from "./pages/Tenders";
 import Bidders from "./pages/Bidders";
+import BidderDetails from "./pages/BidderDetails";
+import DocumentVerification from "./pages/DocumentVerification";
+import DeclaredVerified from "./pages/DeclaredVerified";
+import OfficerReview from "./Components/OfficerReview";
 
 function App() {
   return (
@@ -18,6 +22,10 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tenders" element={<Tenders />} />
         <Route path="/bidders" element={<Bidders />} />
+        <Route path="/bidder_details" element={<BidderDetails />} />
+        <Route path="/documentverification" element={<DocumentVerification />} />
+        <Route path="/declared-verified" element={<DeclaredVerified />} />
+        <Route path="/officer-review" element={<OfficerReview />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
