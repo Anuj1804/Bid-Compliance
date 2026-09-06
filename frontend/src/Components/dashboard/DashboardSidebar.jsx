@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -16,25 +17,67 @@ import {
 
 const navSections = [
   {
-    title: "WORKSPACE",
-    items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { id: "tenders", label: "Tenders", icon: FileText },
-      { id: "bidders", label: "Bidders", icon: UsersRound },
-      { id: "document-verification", label: "Document Verification", icon: FileCheck2 },
-      { id: "reviews", label: "Reviews", icon: ClipboardCheck },
-    ],
-  },
+  title: "WORKSPACE",
+  items: [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      path: "/dashboard",
+    },
+    {
+      id: "tenders",
+      label: "Tenders",
+      icon: FileText,
+      path: "/tenders",
+    },
+    {
+      id: "bidders",
+      label: "Bidders",
+      icon: UsersRound,
+      path: "/bidders",
+    },
+    {
+      id: "document-verification",
+      label: "Document Verification",
+      icon: FileCheck2,
+      path: "/documentverification",
+    },
+    {
+      id: "reviews",
+      label: "Reviews",
+      icon: ClipboardCheck,
+      path: "/reviews",
+    },
+  ],
+},
   {
-    title: "COMPLIANCE",
-    items: [
-      { id: "audit-trail", label: "Audit Trail", icon: History },
-      { id: "blacklist-sandbox", label: "Blacklist Sandbox", icon: ShieldAlert },
-    ],
-  },
+  title: "COMPLIANCE",
+  items: [
+    {
+      id: "audit-trail",
+      label: "Audit Trail",
+      icon: History,
+      path: "/audit-trail",
+    },
+    {
+      id: "blacklist-sandbox",
+      label: "Blacklist Sandbox",
+      icon: ShieldAlert,
+      path: "/blacklist-sandbox",
+    },
+  ],
+},
   {
     title: "SYSTEM",
-    items: [{ id: "admin-panel", label: "Admin Panel", icon: Settings2 }],
+    items: [
+  {
+    id: "admin-panel",
+    label: "Admin Panel",
+    icon: Settings2,
+    path: "/admin-panel",
+  },
+],
   },
 ];
 
@@ -48,7 +91,8 @@ const DashboardSidebar = ({
   // parent (Dashboard.jsx) does not yet control these props.
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isCollapsed =
     isCollapsedProp !== undefined ? isCollapsedProp : internalCollapsed;
@@ -117,12 +161,15 @@ const DashboardSidebar = ({
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = activeItem === item.id;
+                  const isActive = location.pathname === item.path;
                   return (
                     <li key={item.id}>
                       <button
                         type="button"
-                        onClick={() => setActiveItem(item.id)}
+                        onClick={() => {
+                        navigate(item.path);
+                        setIsMobileOpen(false);
+                        }}
                         aria-current={isActive ? "page" : undefined}
                         title={item.label}
                         className={`group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${

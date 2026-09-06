@@ -11,7 +11,8 @@ import DocumentVerification from "./pages/DocumentVerification";
 import DeclaredVerified from "./pages/DeclaredVerified";
 import OfficerReview from "./Components/OfficerReview";
 import AuditTrailPage from "./pages/Audittrail";
-import BlacklistSandbox from "./Components/BlacklistSandbox";
+import BlacklistSandbox from "./pages/BlacklistSandbox";
+import AdminPanel from "./Components/AdminPanel";
 
 
 function App() {
@@ -30,7 +31,8 @@ function App() {
         <Route path="/declared-verified" element={<DeclaredVerified />} />
         <Route path="/officer-review" element={<OfficerReview />} />
         <Route path="/audit-trail" element={<AuditTrailPage />} />
-        <Route path="/blacklistSandbox" element={<BlacklistSandbox />} />
+        <Route path="/blacklist-sandbox" element={<BlacklistSandbox />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
