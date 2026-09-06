@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   Mail,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [organization, setOrganization] = useState("");
@@ -42,48 +44,82 @@ const SignUp = () => {
   const passwordStrength = getPasswordStrength(password);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const nextErrors = {};
-    if (!fullName.trim()) nextErrors.fullName = "Full name is required.";
-    if (!email.trim()) {
-      nextErrors.email = "Official email is required.";
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      nextErrors.email = "Enter a valid email address.";
-    }
-    if (!organization.trim())
-      nextErrors.organization = "Organization is required.";
-    if (!password.trim()) {
-      nextErrors.password = "Password is required.";
-    } else if (password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters.";
-    }
-    if (!confirmPassword.trim()) {
-      nextErrors.confirmPassword = "Please confirm your password.";
-    } else if (confirmPassword !== password) {
-      nextErrors.confirmPassword = "Passwords do not match.";
-    }
-    if (!agreedToTerms)
-      nextErrors.terms = "You must agree to the Terms of Service.";
+  const nextErrors = {};
 
-    setErrors(nextErrors);
+  if (!fullName.trim()) {
+    nextErrors.fullName = "Full name is required.";
+  }
 
-    if (Object.keys(nextErrors).length > 0) return;
+  if (!email.trim()) {
+    nextErrors.email = "Official email is required.";
+  } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+    nextErrors.email = "Enter a valid email address.";
+  }
+
+  if (!organization.trim()) {
+    nextErrors.organization = "Organization is required.";
+  }
+
+  if (!password.trim()) {
+    nextErrors.password = "Password is required.";
+  } else if (password.length < 8) {
+    nextErrors.password = "Password must be at least 8 characters.";
+  }
+
+  if (!confirmPassword.trim()) {
+    nextErrors.confirmPassword = "Please confirm your password.";
+  } else if (confirmPassword !== password) {
+    nextErrors.confirmPassword = "Passwords do not match.";
+  }
+
+  if (!agreedToTerms) {
+    nextErrors.terms = "You must agree to the Terms of Service.";
+  }
+
+  setErrors(nextErrors);
+
+  if (Object.keys(nextErrors).length > 0) {
+    return;
+  }
+
+  try {
+    const existingUser = localStorage.getItem("bidComplianceUser");
+
+    if (existingUser) {
+      const parsedUser = JSON.parse(existingUser);
+
+      if (parsedUser.email === email.trim().toLowerCase()) {
+        setErrors({
+          email: "An account with this email already exists.",
+        });
+        return;
+      }
+    }
+
+    const user = {
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      organization: organization.trim(),
+      password: password,
+    };
+
+    localStorage.setItem("bidComplianceUser", JSON.stringify(user));
 
     setIsSubmitting(true);
 
-    // Placeholder for future backend integration
-    setTimeout(() => {
-      console.log("Signup submitted:", {
-        fullName,
-        email,
-        organization,
-        password,
-        agreedToTerms,
-      });
-      setIsSubmitting(false);
-    }, 900);
-  };
+    navigate("/login");
+  } catch (error) {
+    console.error("Signup error:", error);
+
+    setErrors({
+      email: "Something went wrong. Please try again.",
+    });
+
+    setIsSubmitting(false);
+  }
+};
 
   const benefits = [
     "Unified verification",

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   ShieldCheck,
@@ -252,6 +253,8 @@ const BidderRow = ({ bidder, isVisible, index, onView }) => {
 };
 
 const Bidders = () => {
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [riskFilter, setRiskFilter] = useState("All Risk");
   const [complianceFilter, setComplianceFilter] = useState("All Compliance");
@@ -288,9 +291,9 @@ const Bidders = () => {
   }, []);
 
   const handleViewBidder = (bidderId) => {
-    // Placeholder — wire up to React Router navigation to /bidders/:bidderId later.
-    console.log(`Navigate to /bidders/${bidderId}`);
-  };
+  localStorage.setItem("selectedBidderId", bidderId);
+  navigate("/bidder_details");
+};
 
   const filteredBidders = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Upload,
   FileText,
@@ -235,6 +236,8 @@ function SectionCard({ title, description, icon: Icon, children, id, className =
 /* ------------------------------------------------------------------ */
 
 export default function DocumentVerification() {
+  const navigate = useNavigate();
+
   const [selectedTenderId, setSelectedTenderId] = useState(TENDERS[0].id);
   const [selectedBidderId, setSelectedBidderId] = useState(BIDDERS[0].id);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -352,11 +355,15 @@ export default function DocumentVerification() {
   ).length;
 
   const handleRunVerification = () => {
-    setActionMessage({
-      type: "info",
-      text: "Verification run started for the selected tender and bidder. Results below reflect the latest simulated run.",
-    });
-  };
+  setActionMessage({
+    type: "info",
+    text: "Verification completed. Opening Officer Review...",
+  });
+
+  setTimeout(() => {
+    navigate("/reviews");
+  }, 700);
+};
 
   const handleSaveRecord = () => {
     setActionMessage({

@@ -13,6 +13,7 @@ import OfficerReview from "./Components/OfficerReview";
 import AuditTrailPage from "./pages/Audittrail";
 import BlacklistSandbox from "./pages/BlacklistSandbox";
 import AdminPanel from "./Components/AdminPanel";
+import Reviews from "./Components/reviews";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/audit-trail" element={<AuditTrailPage />} />
         <Route path="/blacklist-sandbox" element={<BlacklistSandbox />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
+        <Route path="/reviews" element={<Reviews />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   UsersRound,
@@ -219,6 +220,7 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
 };
 
 const Tenders = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [riskFilter, setRiskFilter] = useState("All Risk");
@@ -282,10 +284,10 @@ const Tenders = () => {
     setRiskFilter("All Risk");
   };
 
-  const handleViewTender = (tenderId) => {
-    // Placeholder — wire up to React Router navigation to /tenders/:tenderId later.
-    console.log(`Navigate to /tenders/${tenderId}`);
-  };
+ const handleViewTender = (tenderId) => {
+  localStorage.setItem("selectedTenderId", tenderId);
+  navigate("/bidders");
+};
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">

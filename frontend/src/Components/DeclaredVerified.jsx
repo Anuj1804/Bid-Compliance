@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -151,6 +152,7 @@ function EvidenceItem({ label, value }) {
 /* ------------------------------------------------------------------ */
 
 export default function DeclaredVerified({ discrepancy = DISCREPANCY, context = CONTEXT }) {
+  const navigate = useNavigate();
   const isMismatch = discrepancy.status === "MISMATCH";
 
   return (
@@ -329,14 +331,14 @@ export default function DeclaredVerified({ discrepancy = DISCREPANCY, context = 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={() => console.log("Open officer review")}
+                onClick={() => navigate("/officer-review")}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 sm:w-auto"
               >
                 Open Officer Review
               </button>
               <button
                 type="button"
-                onClick={() => console.log("Navigate back to bidder details")}
+                onClick={() => navigate("/bidder_details")}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 sm:w-auto"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
@@ -300,6 +301,7 @@ function SectionHeading({ title, description, icon: Icon }) {
 /* ------------------------------------------------------------------ */
 
 export default function BidderDetails() {
+  const navigate = useNavigate();
   const [scoreWidth, setScoreWidth] = useState(0);
 
   useEffect(() => {
@@ -590,6 +592,17 @@ export default function BidderDetails() {
                 </li>
               ))}
             </ul>
+            <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem("selectedBidderId", BIDDER.bidderId);
+              navigate("/documentverification");
+            }}
+            className="mt-4 inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+          >
+            Open Document Verification
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </button>
           </section>
         </Reveal>
 

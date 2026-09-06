@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,18 +19,33 @@ const Login = () => {
   const [errors, setErrors] = useState({});
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const nextErrors = {};
-    if (!email.trim()) nextErrors.email = "Email is required.";
-    if (!password.trim()) nextErrors.password = "Password is required.";
-    setErrors(nextErrors);
+  const nextErrors = {};
 
-    if (Object.keys(nextErrors).length > 0) return;
+  if (!email.trim()) {
+    nextErrors.email = "Email is required.";
+  }
 
-    // Placeholder for future backend integration
-    console.log("Login submitted:", { email, password, rememberMe });
-  };
+  if (!password.trim()) {
+    nextErrors.password = "Password is required.";
+  }
+
+  setErrors(nextErrors);
+
+  if (Object.keys(nextErrors).length > 0) return;
+
+  // Frontend demo authentication
+  localStorage.setItem("isLoggedIn", "true");
+
+  if (rememberMe) {
+    localStorage.setItem("rememberMe", "true");
+  } else {
+    localStorage.removeItem("rememberMe");
+  }
+
+  navigate("/dashboard");
+};
 
   const benefits = [
     "Unified verification",
@@ -224,6 +241,7 @@ const Login = () => {
               Don&apos;t have an account?{" "}
               <button
                 type="button"
+                onClick={() => navigate("/signup")}
                 className="font-medium text-blue-600 hover:text-blue-700 focus:outline-none focus-visible:underline"
               >
                 Create account
