@@ -10,7 +10,7 @@ import BidderDetails from "./pages/BidderDetails";
 import DocumentVerification from "./pages/DocumentVerification";
 import DeclaredVerified from "./pages/DeclaredVerified";
 import OfficerReview from "./Components/OfficerReview";
-import Audittrail from "./Components/Audittrail";
+import AuditTrailPage from "./pages/Audittrail";
 import BlacklistSandbox from "./Components/BlacklistSandbox";
 
 
@@ -29,7 +29,7 @@ function App() {
         <Route path="/documentverification" element={<DocumentVerification />} />
         <Route path="/declared-verified" element={<DeclaredVerified />} />
         <Route path="/officer-review" element={<OfficerReview />} />
-        <Route path="/audit-trail" element={<Audittrail />} />
+        <Route path="/audit-trail" element={<AuditTrailPage />} />
         <Route path="/blacklistSandbox" element={<BlacklistSandbox />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
