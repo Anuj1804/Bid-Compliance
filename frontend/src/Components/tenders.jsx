@@ -11,73 +11,101 @@ import {
 } from "lucide-react";
 
 // Mock / demo data — structured so it can be swapped for API data later.
-const tenders = [
-  {
-    id: "GEM/2026/B/18421",
-    title: "Industrial Pumping Equipment",
-    category: "Process Equipment",
-    bidders: 18,
-    checks: ["GST", "PAN", "UDYAM", "BLACKLIST"],
-    compliance: 82,
-    risk: "LOW",
-    status: "ACTIVE",
-  },
-  {
-    id: "GEM/2026/B/18397",
-    title: "Pipeline Safety Systems",
-    category: "Industrial Safety",
-    bidders: 24,
-    checks: ["GST", "PAN", "UDYAM"],
-    compliance: 68,
-    risk: "MEDIUM",
-    status: "UNDER REVIEW",
-  },
-  {
-    id: "GEM/2026/B/18355",
-    title: "Process Control Equipment",
-    category: "Automation & Controls",
-    bidders: 11,
-    checks: ["GST", "PAN", "OEM AUTHORIZATION"],
-    compliance: 91,
-    risk: "LOW",
-    status: "ACTIVE",
-  },
-  {
-    id: "GEM/2026/B/18288",
-    title: "Electrical Distribution Components",
-    category: "Electrical Systems",
-    bidders: 32,
-    checks: ["GST", "PAN", "UDYAM", "BLACKLIST"],
-    compliance: 61,
-    risk: "HIGH",
-    status: "CLOSING SOON",
-  },
-  {
-    id: "GEM/2026/B/18512",
-    title: "Refinery Maintenance Supplies",
-    category: "Maintenance & Repair",
-    bidders: 15,
-    checks: ["GST", "PAN", "UDYAM"],
-    compliance: 74,
-    risk: "MEDIUM",
-    status: "CLOSING SOON",
-  },
-  {
-    id: "GEM/2026/B/18190",
-    title: "Water Treatment Instrumentation",
-    category: "Environmental Systems",
-    bidders: 9,
-    checks: ["GST", "PAN"],
-    compliance: 95,
-    risk: "LOW",
-    status: "CLOSED",
-  },
-];
+// const tenders = [
+//   {
+//     id: "GEM/2026/B/18421",
+//     title: "Industrial Pumping Equipment",
+//     category: "Process Equipment",
+//     bidders: 18,
+//     checks: ["GST", "PAN", "UDYAM", "BLACKLIST"],
+//     compliance: 82,
+//     risk: "LOW",
+//     status: "ACTIVE",
+//   },
+//   {
+//     id: "GEM/2026/B/18397",
+//     title: "Pipeline Safety Systems",
+//     category: "Industrial Safety",
+//     bidders: 24,
+//     checks: ["GST", "PAN", "UDYAM"],
+//     compliance: 68,
+//     risk: "MEDIUM",
+//     status: "UNDER REVIEW",
+//   },
+//   {
+//     id: "GEM/2026/B/18355",
+//     title: "Process Control Equipment",
+//     category: "Automation & Controls",
+//     bidders: 11,
+//     checks: ["GST", "PAN", "OEM AUTHORIZATION"],
+//     compliance: 91,
+//     risk: "LOW",
+//     status: "ACTIVE",
+//   },
+//   {
+//     id: "GEM/2026/B/18288",
+//     title: "Electrical Distribution Components",
+//     category: "Electrical Systems",
+//     bidders: 32,
+//     checks: ["GST", "PAN", "UDYAM", "BLACKLIST"],
+//     compliance: 61,
+//     risk: "HIGH",
+//     status: "CLOSING SOON",
+//   },
+//   {
+//     id: "GEM/2026/B/18512",
+//     title: "Refinery Maintenance Supplies",
+//     category: "Maintenance & Repair",
+//     bidders: 15,
+//     checks: ["GST", "PAN", "UDYAM"],
+//     compliance: 74,
+//     risk: "MEDIUM",
+//     status: "CLOSING SOON",
+//   },
+//   {
+//     id: "GEM/2026/B/18190",
+//     title: "Water Treatment Instrumentation",
+//     category: "Environmental Systems",
+//     bidders: 9,
+//     checks: ["GST", "PAN"],
+//     compliance: 95,
+//     risk: "LOW",
+//     status: "CLOSED",
+//   },
+// ];
 
 const riskStyles = {
-  HIGH: { icon: TriangleAlert, dot: "bg-red-500", text: "text-red-700", bg: "bg-red-50", border: "border-red-200" },
-  MEDIUM: { icon: ShieldAlert, dot: "bg-amber-500", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
-  LOW: { icon: ShieldCheck, dot: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+  HIGH: {
+    icon: TriangleAlert,
+    dot: "bg-red-500",
+    text: "text-red-700",
+    bg: "bg-red-50",
+    border: "border-red-200",
+  },
+
+  MEDIUM: {
+    icon: ShieldAlert,
+    dot: "bg-amber-500",
+    text: "text-amber-700",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+  },
+
+  LOW: {
+    icon: ShieldCheck,
+    dot: "bg-emerald-500",
+    text: "text-emerald-700",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+  },
+
+  UNVERIFIED: {
+    icon: ShieldAlert,
+    dot: "bg-slate-400",
+    text: "text-slate-600",
+    bg: "bg-slate-50",
+    border: "border-slate-200",
+  },
 };
 
 const statusStyles = {
@@ -120,14 +148,35 @@ const StatusBadge = ({ status }) => (
 );
 
 const ComplianceProgress = ({ value, isVisible, delay }) => {
+  if (value === null || value === undefined) {
+    return (
+      <div className="w-full max-w-[140px]">
+        <span className="text-sm font-semibold text-slate-400">
+          Not verified
+        </span>
+
+        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-full w-0 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
   const tone = getComplianceTone(value);
+
   return (
     <div className="w-full max-w-[140px]">
-      <span className={`text-sm font-semibold tabular-nums ${tone.text}`}>{value}%</span>
+      <span className={`text-sm font-semibold tabular-nums ${tone.text}`}>
+        {value}%
+      </span>
+
       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div
           className={`h-full rounded-full ${tone.bar} transition-[width] duration-700 ease-out`}
-          style={{ width: isVisible ? `${value}%` : "0%", transitionDelay: isVisible ? delay : "0ms" }}
+          style={{
+            width: isVisible ? `${value}%` : "0%",
+            transitionDelay: isVisible ? delay : "0ms",
+          }}
         />
       </div>
     </div>
@@ -221,9 +270,53 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
 
 const Tenders = () => {
   const navigate = useNavigate();
+
+  const [tenders, setTenders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [riskFilter, setRiskFilter] = useState("All Risk");
+    useEffect(() => {
+    const fetchTenders = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const response = await fetch(
+          "http://localhost:8000/api/tenders"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tenders");
+        }
+
+        const data = await response.json();
+
+        const formattedTenders = data.map((tender) => ({
+          id: String(tender.id),
+          title: tender.title || "Untitled Tender",
+          category: "GeM Tender",
+          bidders: 0,
+          checks: tender.required_checks || [],
+          compliance: null,
+          risk: "UNVERIFIED",
+          status: "ACTIVE",
+          description: tender.description || "",
+        }));
+
+        setTenders(formattedTenders);
+      } catch (err) {
+        console.error("Tender fetch error:", err);
+        setError("Unable to load tenders from backend.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTenders();
+  }, []);
 
   const listRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -273,7 +366,7 @@ const Tenders = () => {
 
       return matchesSearch && matchesStatus && matchesRisk;
     });
-  }, [searchQuery, statusFilter, riskFilter]);
+  }, [tenders, searchQuery, statusFilter, riskFilter]);
 
   const hasActiveFilters =
     searchQuery.trim() !== "" || statusFilter !== "All Status" || riskFilter !== "All Risk";
@@ -301,11 +394,14 @@ const Tenders = () => {
         </div>
 
         <span
-          className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-amber-700"
-          title="These tenders are placeholder demo data, not live procurement records."
+        className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-700"
+        title="Tender records are loaded from the backend database."
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-          SIMULATED DATA
+        <span
+            className="h-1.5 w-1.5 rounded-full bg-emerald-500"
+            aria-hidden="true"
+        />
+        LIVE DATA
         </span>
       </div>
 
@@ -378,46 +474,110 @@ const Tenders = () => {
           <p className="mt-0.5 text-sm text-slate-500">Current tenders requiring compliance monitoring.</p>
         </div>
 
-        <div ref={listRef} className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          {/* Desktop column headings */}
-          {filteredTenders.length > 0 && (
-            <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_140px_100px_140px_110px] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">TENDER</span>
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">BIDDERS</span>
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">APPLICABLE CHECKS</span>
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">COMPLIANCE</span>
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">RISK</span>
-              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">STATUS</span>
-              <span className="text-right text-[10px] font-semibold tracking-[0.1em] text-slate-400">ACTION</span>
-            </div>
-          )}
+        <div
+  ref={listRef}
+  className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+>
+  {/* Loading State */}
+  {isLoading && (
+    <div className="px-6 py-12 text-center">
+      <p className="text-sm text-slate-500">
+        Loading tenders from database...
+      </p>
+    </div>
+  )}
 
-          {filteredTenders.length > 0 ? (
-            <div role="list" aria-label="Tenders">
-              {filteredTenders.map((tender, index) => (
-                <div role="listitem" key={tender.id}>
-                  <TenderRow tender={tender} isVisible={isVisible} index={index} onView={handleViewTender} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200">
-                <FilterX className="h-4.5 w-4.5 text-slate-400" size={18} aria-hidden="true" />
-              </span>
-              <p className="text-sm font-medium text-slate-600">No tenders match your current filters.</p>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="mt-1 inline-flex items-center rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
-                >
-                  Clear filters
-                </button>
-              )}
-            </div>
-          )}
+  {/* Error State */}
+  {error && !isLoading && (
+    <div className="px-6 py-12 text-center">
+      <p className="text-sm font-medium text-red-600">
+        {error}
+      </p>
+    </div>
+  )}
+
+  {/* Desktop Column Headings */}
+  {!isLoading && !error && filteredTenders.length > 0 && (
+    <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_140px_100px_140px_110px] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
+      
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        TENDER
+      </span>
+
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        BIDDERS
+      </span>
+
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        APPLICABLE CHECKS
+      </span>
+
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        COMPLIANCE
+      </span>
+
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        RISK
+      </span>
+
+      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        STATUS
+      </span>
+
+      <span className="text-right text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+        ACTION
+      </span>
+
+    </div>
+  )}
+
+  {/* Tender List */}
+  {!isLoading && !error && filteredTenders.length > 0 ? (
+    <div role="list" aria-label="Tenders">
+
+      {filteredTenders.map((tender, index) => (
+        <div role="listitem" key={tender.id}>
+          <TenderRow
+            tender={tender}
+            isVisible={isVisible}
+            index={index}
+            onView={handleViewTender}
+          />
         </div>
+      ))}
+
+    </div>
+  ) : !isLoading && !error ? (
+
+    /* No Results */
+    <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+
+      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
+        <FilterX
+          className="h-4.5 w-4.5 text-slate-400"
+          size={18}
+          aria-hidden="true"
+        />
+      </span>
+
+      <p className="text-sm font-medium text-slate-600">
+        No tenders match your current filters.
+      </p>
+
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={clearFilters}
+          className="mt-1 inline-flex items-center rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+        >
+          Clear filters
+        </button>
+      )}
+
+    </div>
+
+  ) : null}
+</div>
       </section>
     </main>
   );
