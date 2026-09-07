@@ -18,33 +18,31 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
   e.preventDefault();
-
   const nextErrors = {};
-
-  if (!email.trim()) {
-    nextErrors.email = "Email is required.";
-  }
-
-  if (!password.trim()) {
-    nextErrors.password = "Password is required.";
-  }
-
+  if (!email.trim()) nextErrors.email = "Username is required.";
+  if (!password.trim()) nextErrors.password = "Password is required.";
   setErrors(nextErrors);
-
   if (Object.keys(nextErrors).length > 0) return;
 
-  // Frontend demo authentication
-  localStorage.setItem("isLoggedIn", "true");
+  try {
+    const res = await fetch("http://localhost:8000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: email.trim(), password }),
+    });
+    if (!res.ok) throw new Error("Invalid credentials");
+    const data = await res.json();
 
-  if (rememberMe) {
-    localStorage.setItem("rememberMe", "true");
-  } else {
-    localStorage.removeItem("rememberMe");
+    localStorage.setItem("token", data.access_token);
+    localStorage.setItem("role", data.role);
+    localStorage.setItem("isLoggedIn", "true");
+
+    navigate("/dashboard");
+  } catch (err) {
+    setErrors({ email: err.message });
   }
-
-  navigate("/dashboard");
 };
 
   const benefits = [
@@ -125,7 +123,7 @@ const Login = () => {
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-700 mb-1.5"
               >
-                Official Email
+                Username
               </label>
               <div className="relative">
                 <Mail
@@ -139,7 +137,7 @@ const Login = () => {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@organization.gov.in"
+                  placeholder="e.g. officer1"
                   aria-invalid={Boolean(errors.email)}
                   aria-describedby={errors.email ? "email-error" : undefined}
                   className={`w-full rounded-xl border bg-white pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 ${
