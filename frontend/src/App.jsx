@@ -26,12 +26,12 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tenders" element={<Tenders />} />
-        <Route path="/bidders" element={<Bidders />} />
-        <Route path="/bidder_details" element={<BidderDetails />} />
-        <Route path="/documentverification" element={<DocumentVerification />} />
+        <Route path="/tenders/:tenderId/bidders" element={<Bidders />} />
+        <Route path="/tenders/:tenderId/bidders/:bidderId" element={<BidderDetails />} />
+        <Route path="/tenders/:tenderId/bidders/:bidderId/verify" element={<DocumentVerification />} />
         <Route path="/declared-verified" element={<DeclaredVerified />} />
-        <Route path="/officer-review" element={<OfficerReview />} />
-        <Route path="/audit-trail" element={<AuditTrailPage />} />
+        <Route path="/officer-review/:bidderId" element={<OfficerReview />} />
+        <Route path="/tenders/:tenderId/audit-trail/:bidderId" element={<AuditTrailPage />} />
         <Route path="/blacklist-sandbox" element={<BlacklistSandbox />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/reviews" element={<Reviews />} />

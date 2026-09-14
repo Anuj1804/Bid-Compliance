@@ -123,6 +123,27 @@ const getComplianceTone = (value) => {
   if (value >= 50) return { bar: "bg-amber-500", text: "text-amber-700" };
   return { bar: "bg-red-500", text: "text-red-700" };
 };
+const RiskBreakdown = ({ summary }) => {
+  const parts = [
+    summary.HIGH > 0 && { label: `${summary.HIGH} High`, cls: "text-red-700 bg-red-50 border-red-200" },
+    summary.MEDIUM > 0 && { label: `${summary.MEDIUM} Medium`, cls: "text-amber-700 bg-amber-50 border-amber-200" },
+    summary.LOW > 0 && { label: `${summary.LOW} Low`, cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  ].filter(Boolean);
+
+  if (parts.length === 0) {
+    return <span className="text-xs text-slate-400">Not verified</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {parts.map((p) => (
+        <span key={p.label} className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${p.cls}`}>
+          {p.label}
+        </span>
+      ))}
+    </div>
+  );
+};
 
 const RiskBadge = ({ risk }) => {
   const styles = riskStyles[risk] ?? riskStyles.MEDIUM;
@@ -139,9 +160,8 @@ const RiskBadge = ({ risk }) => {
 
 const StatusBadge = ({ status }) => (
   <span
-    className={`inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-semibold tracking-wide ${
-      statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-600"
-    }`}
+    className={`inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-semibold tracking-wide ${statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-600"
+      }`}
   >
     {status}
   </span>
@@ -188,13 +208,12 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
 
   return (
     <div
-      className={`group border-b border-slate-100 px-4 sm:px-5 py-4 transition-all duration-500 ease-out last:border-b-0 hover:bg-slate-50 md:hover:translate-x-[2px] hover:shadow-[0_1px_0_rgba(15,23,42,0.02)] ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-      }`}
+      className={`group border-b border-slate-100 px-4 sm:px-5 py-4 transition-all duration-500 ease-out last:border-b-0 hover:bg-slate-50 md:hover:translate-x-[2px] hover:shadow-[0_1px_0_rgba(15,23,42,0.02)] ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+        }`}
       style={{ transitionDelay: isVisible ? delay : "0ms" }}
     >
       {/* Desktop / tablet grid row */}
-      <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_140px_100px_140px_110px] lg:items-center lg:gap-4">
+      <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_180px_140px_110px] lg:items-center lg:gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-slate-800">{tender.title}</p>
           <p className="mt-0.5 truncate font-mono text-[11px] text-slate-400">{tender.id}</p>
@@ -208,10 +227,7 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
 
         <p className="truncate text-xs text-slate-500">{tender.checks.join(" · ")}</p>
 
-        <ComplianceProgress value={tender.compliance} isVisible={isVisible} delay={delay} />
-
-        <RiskBadge risk={tender.risk} />
-
+       <RiskBreakdown summary={tender.riskSummary} />
         <StatusBadge status={tender.status} />
 
         <div className="flex justify-end">
@@ -234,7 +250,7 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
             <p className="truncate text-sm font-medium text-slate-800">{tender.title}</p>
             <p className="mt-0.5 truncate font-mono text-[11px] text-slate-400">{tender.id}</p>
           </div>
-          <RiskBadge risk={tender.risk} />
+          <RiskBreakdown summary={tender.riskSummary} />
         </div>
 
         <p className="mt-1 text-xs text-slate-400">{tender.category}</p>
@@ -246,9 +262,6 @@ const TenderRow = ({ tender, isVisible, index, onView }) => {
 
         <p className="mt-2 truncate text-xs text-slate-500">{tender.checks.join(" · ")}</p>
 
-        <div className="mt-3">
-          <ComplianceProgress value={tender.compliance} isVisible={isVisible} delay={delay} />
-        </div>
 
         <div className="mt-3 flex items-center gap-2">
           <StatusBadge status={tender.status} />
@@ -278,7 +291,7 @@ const Tenders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [riskFilter, setRiskFilter] = useState("All Risk");
-    useEffect(() => {
+  useEffect(() => {
     const fetchTenders = async () => {
       try {
         setIsLoading(true);
@@ -294,17 +307,26 @@ const Tenders = () => {
 
         const data = await response.json();
 
-        const formattedTenders = data.map((tender) => ({
-          id: String(tender.id),
-          title: tender.title || "Untitled Tender",
-          category: "GeM Tender",
-          bidders: 0,
-          checks: tender.required_checks || [],
-          compliance: null,
-          risk: "UNVERIFIED",
-          status: "ACTIVE",
-          description: tender.description || "",
-        }));
+                const formattedTenders = data.map((tender) => {
+          // Backend se aa raha risk summary lo
+          const rs = tender.risk_summary || { LOW: 0, MEDIUM: 0, HIGH: 0 };
+          
+          // Agar usme MANUAL_REVIEW_NEEDED hai, toh usko "HIGH" risk mein jod do
+          if (rs.MANUAL_REVIEW_NEEDED) {
+            rs.HIGH = (rs.HIGH || 0) + rs.MANUAL_REVIEW_NEEDED;
+          }
+          
+          return {
+            id: String(tender.id),
+            title: tender.title || "Untitled Tender",
+            category: "GeM Tender",
+            bidders: tender.bidder_count ?? 0,
+            riskSummary: rs,
+            checks: tender.required_checks || [],
+            status: "ACTIVE",
+            description: tender.description || "",
+          };
+        });
 
         setTenders(formattedTenders);
       } catch (err) {
@@ -362,7 +384,8 @@ const Tenders = () => {
         tender.status.toLowerCase() === statusFilter.toLowerCase();
 
       const matchesRisk =
-        riskFilter === "All Risk" || tender.risk.toLowerCase() === riskFilter.toLowerCase();
+  riskFilter === "All Risk" ||
+  (tender.riskSummary && tender.riskSummary[riskFilter.toUpperCase()] > 0);
 
       return matchesSearch && matchesStatus && matchesRisk;
     });
@@ -377,10 +400,9 @@ const Tenders = () => {
     setRiskFilter("All Risk");
   };
 
- const handleViewTender = (tenderId) => {
-  localStorage.setItem("selectedTenderId", tenderId);
-  navigate("/bidders");
-};
+  const handleViewTender = (tenderId) => {
+    navigate(`/tenders/${tenderId}/bidders`);
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -394,14 +416,14 @@ const Tenders = () => {
         </div>
 
         <span
-        className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-700"
-        title="Tender records are loaded from the backend database."
+          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-700"
+          title="Tender records are loaded from the backend database."
         >
-        <span
+          <span
             className="h-1.5 w-1.5 rounded-full bg-emerald-500"
             aria-hidden="true"
-        />
-        LIVE DATA
+          />
+          LIVE DATA
         </span>
       </div>
 
@@ -475,109 +497,105 @@ const Tenders = () => {
         </div>
 
         <div
-  ref={listRef}
-  className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
->
-  {/* Loading State */}
-  {isLoading && (
-    <div className="px-6 py-12 text-center">
-      <p className="text-sm text-slate-500">
-        Loading tenders from database...
-      </p>
-    </div>
-  )}
-
-  {/* Error State */}
-  {error && !isLoading && (
-    <div className="px-6 py-12 text-center">
-      <p className="text-sm font-medium text-red-600">
-        {error}
-      </p>
-    </div>
-  )}
-
-  {/* Desktop Column Headings */}
-  {!isLoading && !error && filteredTenders.length > 0 && (
-    <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_140px_100px_140px_110px] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
-      
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        TENDER
-      </span>
-
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        BIDDERS
-      </span>
-
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        APPLICABLE CHECKS
-      </span>
-
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        COMPLIANCE
-      </span>
-
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        RISK
-      </span>
-
-      <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        STATUS
-      </span>
-
-      <span className="text-right text-[10px] font-semibold tracking-[0.1em] text-slate-400">
-        ACTION
-      </span>
-
-    </div>
-  )}
-
-  {/* Tender List */}
-  {!isLoading && !error && filteredTenders.length > 0 ? (
-    <div role="list" aria-label="Tenders">
-
-      {filteredTenders.map((tender, index) => (
-        <div role="listitem" key={tender.id}>
-          <TenderRow
-            tender={tender}
-            isVisible={isVisible}
-            index={index}
-            onView={handleViewTender}
-          />
-        </div>
-      ))}
-
-    </div>
-  ) : !isLoading && !error ? (
-
-    /* No Results */
-    <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
-
-      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
-        <FilterX
-          className="h-4.5 w-4.5 text-slate-400"
-          size={18}
-          aria-hidden="true"
-        />
-      </span>
-
-      <p className="text-sm font-medium text-slate-600">
-        No tenders match your current filters.
-      </p>
-
-      {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={clearFilters}
-          className="mt-1 inline-flex items-center rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+          ref={listRef}
+          className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
         >
-          Clear filters
-        </button>
-      )}
+          {/* Loading State */}
+          {isLoading && (
+            <div className="px-6 py-12 text-center">
+              <p className="text-sm text-slate-500">
+                Loading tenders from database...
+              </p>
+            </div>
+          )}
 
-    </div>
+          {/* Error State */}
+          {error && !isLoading && (
+            <div className="px-6 py-12 text-center">
+              <p className="text-sm font-medium text-red-600">
+                {error}
+              </p>
+            </div>
+          )}
 
-  ) : null}
-</div>
+          {/* Desktop Column Headings */}
+          {!isLoading && !error && filteredTenders.length > 0 && (
+            <div className="hidden lg:grid lg:grid-cols-[minmax(230px,1.5fr)_90px_1.3fr_180px_140px_110px] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
+
+              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                TENDER
+              </span>
+
+              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                BIDDERS
+              </span>
+
+              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                APPLICABLE CHECKS
+              </span>
+
+              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                RISK BREAKDOWN
+              </span>
+
+              <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                STATUS
+              </span>
+
+              <span className="text-right text-[10px] font-semibold tracking-[0.1em] text-slate-400">
+                ACTION
+              </span>
+
+            </div>
+          )}
+
+          {/* Tender List */}
+          {!isLoading && !error && filteredTenders.length > 0 ? (
+            <div role="list" aria-label="Tenders">
+
+              {filteredTenders.map((tender, index) => (
+                <div role="listitem" key={tender.id}>
+                  <TenderRow
+                    tender={tender}
+                    isVisible={isVisible}
+                    index={index}
+                    onView={handleViewTender}
+                  />
+                </div>
+              ))}
+
+            </div>
+          ) : !isLoading && !error ? (
+
+            /* No Results */
+            <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50">
+                <FilterX
+                  className="h-4.5 w-4.5 text-slate-400"
+                  size={18}
+                  aria-hidden="true"
+                />
+              </span>
+
+              <p className="text-sm font-medium text-slate-600">
+                No tenders match your current filters.
+              </p>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="mt-1 inline-flex items-center rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                >
+                  Clear filters
+                </button>
+              )}
+
+            </div>
+
+          ) : null}
+        </div>
       </section>
     </main>
   );

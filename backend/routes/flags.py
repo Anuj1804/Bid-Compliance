@@ -7,6 +7,7 @@ from database.models import Flag
 from database.schemas import FlagUpdate, FlagOut
 from backend.services import audit_service
 from backend.services.auth_service import get_current_user, CurrentUser
+from typing import List
 
 router = APIRouter(prefix="/api/flags", tags=["flags"])
 
@@ -54,3 +55,8 @@ def update_flag(
     )
 
     return flag
+
+@router.get("", response_model=List[FlagOut])
+def list_all_flags(db: Session = Depends(get_db)):
+    """Fetch all open or escalated flags across the platform for the dashboard."""
+    return db.query(Flag).filter(Flag.status.in_(["open", "escalated"])).all()

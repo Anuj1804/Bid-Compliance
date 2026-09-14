@@ -38,12 +38,6 @@ const navSections = [
       path: "/bidders",
     },
     {
-      id: "document-verification",
-      label: "Document Verification",
-      icon: FileCheck2,
-      path: "/documentverification",
-    },
-    {
       id: "reviews",
       label: "Reviews",
       icon: ClipboardCheck,
@@ -54,12 +48,6 @@ const navSections = [
   {
   title: "COMPLIANCE",
   items: [
-    {
-      id: "audit-trail",
-      label: "Audit Trail",
-      icon: History,
-      path: "/audit-trail",
-    },
     {
       id: "blacklist-sandbox",
       label: "Blacklist Sandbox",

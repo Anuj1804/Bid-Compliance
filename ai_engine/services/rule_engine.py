@@ -41,6 +41,8 @@ def calculate_compliance(check_results: list) -> dict:
     critical_hit = False
     breakdown = []
 
+    
+
     for check in check_results:
         deduction = 0
 

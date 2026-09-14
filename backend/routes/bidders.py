@@ -3,7 +3,7 @@ import shutil
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
-
+from pydantic import BaseModel
 from database.db import get_db
 from database.models import Bidder, Document, VerificationResult, Flag, AuditLog
 from database.schemas import (
@@ -59,7 +59,28 @@ def list_bidders(
                 filtered.append(b)
         return filtered
 
-    return bidders
+    enriched = []
+    for b in bidders:
+        latest = (
+            db.query(VerificationResult)
+            .filter(VerificationResult.bidder_id == b.id)
+            .order_by(VerificationResult.calculated_at.desc())
+            .first()
+        )
+        flag_count = db.query(Flag).filter(Flag.bidder_id == b.id, Flag.status == "open").count()
+        enriched.append(BidderOut(
+            id=b.id,
+            tender_id=b.tender_id,
+            company_name=b.company_name,
+            declared_gstin=b.declared_gstin,
+            declared_pan=b.declared_pan,
+            declared_udyam=b.declared_udyam,
+            created_at=b.created_at,
+            compliance_score=latest.compliance_score if latest else None,
+            risk_level=latest.risk_level if latest else None,
+            flag_count=flag_count,
+        ))
+    return enriched
 
 
 @router.post("/{bidder_id}/documents", response_model=DocumentOut)
@@ -73,16 +94,22 @@ def upload_document(
     bidder = db.query(Bidder).filter(Bidder.id == bidder_id).first()
     if not bidder:
         raise HTTPException(status_code=404, detail="Bidder not found")
+    
+    # Release the database read lock immediately so we don't hold it during the 10-second OCR process!
+    db.commit()
 
-    # Save file locally
     safe_filename = f"{bidder_id}_{document_type}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR, safe_filename)
     with open(file_path, "wb") as f:
+        import shutil
         shutil.copyfileobj(file.file, f)
 
-    # Trigger Person 2's OCR extraction (stub for now — see ocr_service.py)
-    extracted = ocr_service.extract_fields(file_path, document_type)
+    # [Robust]: Safely handle if OCR returns None
+    extracted = ocr_service.extract_fields(file_path, document_type) or {}
     confidence = ocr_service.overall_confidence(extracted)
+
+    # Remove old document of the same type to prevent duplicates
+    db.query(Document).filter(Document.bidder_id == bidder_id, Document.document_type == document_type).delete()
 
     document = Document(
         bidder_id=bidder_id,
@@ -93,13 +120,13 @@ def upload_document(
     )
     db.add(document)
     db.commit()
-    db.refresh(document)
 
     audit_service.log_document_uploaded(
         db, bidder_id=bidder_id, actor=current_user.username,
         document_type=document_type, extraction_confidence=confidence,
     )
 
+    db.refresh(document)
     return document
 
 
@@ -113,59 +140,82 @@ def verify_bidder(
     if not bidder:
         raise HTTPException(status_code=404, detail="Bidder not found")
 
-    # Merge extracted fields across all of this bidder's documents into one
-    # dict — last-document-wins per field is fine for the hackathon; a real
-    # system would reconcile conflicts explicitly.
+    # [FIX]: Delete old verification results to prevent duplicate stacking!
+    db.query(VerificationResult).filter(VerificationResult.bidder_id == bidder_id).delete()
+
+    # Preserve old flag states before deleting them
+    old_flags = db.query(Flag).filter(Flag.bidder_id == bidder_id).all()
+    old_flag_map = {f.check_type: f for f in old_flags}
+    db.query(Flag).filter(Flag.bidder_id == bidder_id).delete()
+    
+    db.commit()
+
     documents = db.query(Document).filter(Document.bidder_id == bidder_id).all()
     merged_extracted = {}
     for doc in documents:
-        if doc.extracted_fields:
-            merged_extracted.update(doc.extracted_fields)
+        if not doc.extracted_fields:
+            continue
+        for k, v in doc.extracted_fields.items():
+            if k not in merged_extracted or (isinstance(v, dict) and v.get("confidence", 0) > merged_extracted.get(k, {}).get("confidence", 0)):
+                merged_extracted[k] = v
 
-    # Call Person 3's orchestrator (stub for now — see verification_service.py)
+    # Release DB read lock before orchestrator runs
+    db.commit()
+
     result = verification_service.run_orchestrator(merged_extracted)
 
     verification = VerificationResult(
         bidder_id=bidder_id,
-        compliance_score=result["compliance_score"],
-        risk_level=result["risk_level"],
+        compliance_score=result.get("compliance_score", 0),
+        risk_level=result.get("risk_level", "HIGH"),
         recommendation=result.get("recommendation"),
-        checks=result["checks"],
+        checks=result.get("checks", []),
     )
     db.add(verification)
     db.commit()
-    db.refresh(verification)
 
-    # Audit: the verification run as a whole
     audit_service.log_check_performed(
         db, bidder_id=bidder_id, actor=current_user.username,
-        checks_summary=f"{len(result['checks'])} checks run",
+        checks_summary="Verification checks run",
         new_state=result,
     )
     audit_service.log_score_calculated(
         db, bidder_id=bidder_id, actor=current_user.username,
-        score=result["compliance_score"], risk_level=result["risk_level"],
+        score=result.get("compliance_score", 0), risk_level=result.get("risk_level", "HIGH"),
     )
 
-    # Raise a Flag row for every check that came back flagged
-    for check in result["checks"]:
-        if check.get("flag"):
-            flag = Flag(
-                bidder_id=bidder_id,
-                check_type=check["check"],
-                status="open",
-                severity=check.get("severity"),
-                reason=check.get("reason"),
-                declared_value=None,
-                verified_value=None,
-            )
-            db.add(flag)
-            db.commit()
-            audit_service.log_flag_raised(
-                db, bidder_id=bidder_id, actor=current_user.username,
-                check_type=check["check"], reason=check.get("reason", ""),
-            )
+    # [Robust]: Intercept AI hallucinated string instead of crashing
+    checks_list = result.get("checks", [])
+    if isinstance(checks_list, list):
+        for check in checks_list:
+            if isinstance(check, dict) and check.get("flag"):
+                check_type = check.get("check", "unknown")
+                old_f = old_flag_map.get(check_type)
+                flag = Flag(
+                    bidder_id=bidder_id,
+                    check_type=check_type,
+                    status=old_f.status if old_f else "open",
+                    severity=check.get("severity"),
+                    reason=check.get("reason"),
+                    declared_value=(bidder.declared_gstin if check_type == "GST" else 
+                                    bidder.declared_pan if check_type == "PAN" else 
+                                    bidder.declared_udyam if check_type == "Udyam" else None),
+                    verified_value=str(check.get("evidence", {}).get("lgnm") or 
+                                       check.get("evidence", {}).get("enterprise_name") or ""),
+                    resolved_at=old_f.resolved_at if old_f else None,
+                    resolved_by=old_f.resolved_by if old_f else None,
+                    officer_note=old_f.officer_note if old_f else None,
+                )
+                db.add(flag)
+        db.commit()
+        for check in checks_list:
+            if isinstance(check, dict) and check.get("flag"):
+                audit_service.log_flag_raised(
+                    db, bidder_id=bidder_id, actor=current_user.username,
+                    check_type=check.get("check", "unknown"), reason=check.get("reason", ""),
+                )
 
+    db.refresh(verification)
     return verification
 
 
@@ -212,3 +262,50 @@ def get_bidder_audit_trail(bidder_id: int, db: Session = Depends(get_db)):
         .order_by(AuditLog.timestamp.asc())
         .all()
     )
+
+@router.get("/{bidder_id}/documents/{doc_id}/file")
+def serve_document_file(bidder_id: int, doc_id: int, db: Session = Depends(get_db)):
+    from fastapi.responses import FileResponse
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.bidder_id == bidder_id
+    ).first()
+    if not doc or not os.path.exists(doc.file_path):
+        raise HTTPException(status_code=404, detail="Document file not found")
+    return FileResponse(doc.file_path)
+
+# ---------------------------------------------------------
+# OFFICER FINAL DECISION API
+# ---------------------------------------------------------
+class DecisionPayload(BaseModel):
+    decision: str
+    note: str
+
+@router.post("/{bidder_id}/decision")
+def submit_officer_decision(
+    bidder_id: int,
+    payload: DecisionPayload,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    # 1. Log the decision in the Audit Trail
+    log = AuditLog(
+        bidder_id=bidder_id,
+        event_type="OFFICER_DECISION",
+        actor=current_user.username,
+        details=f"Officer marked bidder as {payload.decision}",
+        new_state={"decision": payload.decision, "note": payload.note}
+    )
+    db.add(log)
+    
+    # 2. FIX: Agar Officer ne "APPROVE" kiya hai, toh saare Open Flags ko "Resolved" mark kar do
+    if payload.decision == "APPROVED":
+        open_flags = db.query(Flag).filter(Flag.bidder_id == bidder_id, Flag.status == "open").all()
+        for flag in open_flags:
+            flag.status = "resolved"
+            flag.resolved_by = current_user.username
+            flag.resolved_at = datetime.now()
+            flag.officer_note = f"Auto-resolved via Final Decision: {payload.note}"
+            
+    db.commit()
+    return {"status": "success", "decision": payload.decision}

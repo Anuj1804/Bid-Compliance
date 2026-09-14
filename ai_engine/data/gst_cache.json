@@ -1,1 +1,32 @@
-{}
+{
+  "24AALCT0864B1ZK": {
+    "gstin": "24AALCT0864B1ZK",
+    "lgnm": "TATA MOTORS LIMITED",
+    "sts": "Active",
+    "ctb": "Public Limited Company",
+    "rgdt": "2018-04-01",
+    "ctjcd": "Gujarat",
+    "filing_status": "Filed",
+    "last_filed": "2026-08"
+  },
+  "27AAACE4574C1ZV": {
+    "gstin": "27AAACE4574C1ZV",
+    "lgnm": "EMCURE PHARMACEUTICALS LIMITED",
+    "sts": "Active",
+    "ctb": "Public Limited Company",
+    "rgdt": "2019-07-15",
+    "ctjcd": "Maharashtra",
+    "filing_status": "Filed",
+    "last_filed": "2026-08"
+  },
+  "27AAACR5055K3Z5": {
+    "gstin": "27AAACR5055K3Z5",
+    "lgnm": "Reliance Industries Limited",
+    "sts": "Active",
+    "ctb": "Public Limited Company",
+    "rgdt": "2017-07-01",
+    "ctjcd": "Maharashtra",
+    "filing_status": "Filed",
+    "last_filed": "2026-08"
+  }
+}

@@ -60,7 +60,7 @@ DESIGN NOTE — company_name extraction:
 import re
 from pathlib import Path
 
-from paddleocr import PaddleOCR
+# PaddleOCR is imported lazily in _get_ocr_engine
 
 _ocr_engine = None
 
@@ -107,14 +107,20 @@ PAN_ENTITY_TYPE_MAP = {
 }
 
 
-def _get_ocr_engine() -> PaddleOCR:
+import threading
+_ocr_lock = threading.Lock()
+
+def _get_ocr_engine():
     global _ocr_engine
     if _ocr_engine is None:
-        _ocr_engine = PaddleOCR(
-            use_textline_orientation=True,
-            lang="en",
-            enable_mkldnn=False,  # required on this Windows setup — see SETUP_NOTES.md
-        )
+        with _ocr_lock:
+            if _ocr_engine is None:
+                from paddleocr import PaddleOCR
+                _ocr_engine = PaddleOCR(
+                    use_textline_orientation=True,
+                    lang="en",
+                    enable_mkldnn=False,
+                )
     return _ocr_engine
 
 
@@ -155,7 +161,8 @@ def _pan_entity_type(pan: str):
 
 def _run_ocr_on_image(image_path: str) -> list[tuple[str, float]]:
     ocr = _get_ocr_engine()
-    result = ocr.predict(image_path)
+    with _ocr_lock:
+        result = ocr.predict(image_path)
     lines: list[tuple[str, float]] = []
     for res in result:
         rec_texts = res.get("rec_texts", [])

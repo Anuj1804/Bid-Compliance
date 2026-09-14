@@ -2,44 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { UsersRound, ShieldCheck, ShieldAlert, TriangleAlert } from "lucide-react";
 
 // Demo / mock values — structured for easy replacement with API data later.
-const stats = [
-  {
-    id: "total",
-    label: "TOTAL BIDDERS",
-    value: 128,
-    supportingText: "Processed",
-    icon: UsersRound,
-    accent: "blue",
-    emphasize: false,
-  },
-  {
-    id: "low",
-    label: "LOW RISK",
-    value: 76,
-    supportingText: "59.4% of total",
-    icon: ShieldCheck,
-    accent: "green",
-    emphasize: false,
-  },
-  {
-    id: "medium",
-    label: "MEDIUM RISK",
-    value: 38,
-    supportingText: "29.7% of total",
-    icon: ShieldAlert,
-    accent: "amber",
-    emphasize: false,
-  },
-  {
-    id: "high",
-    label: "HIGH RISK",
-    value: 14,
-    supportingText: "Needs attention",
-    icon: TriangleAlert,
-    accent: "red",
-    emphasize: true,
-  },
-];
+// DELETE the entire const stats = [...] block and REPLACE with:
+
 
 // Tailwind class tokens per accent — kept explicit (no dynamic string
 // interpolation) so Tailwind's JIT compiler picks all of them up.
@@ -76,10 +40,11 @@ const accentStyles = {
  */
 const useCountUp = (target, isActive, duration = 850) => {
   const [value, setValue] = useState(0);
-  const hasRun = useRef(false);
 
   useEffect(() => {
-    if (!isActive || hasRun.current) return;
+    // Only run the animation once the data has arrived (target > 0) or if it's genuinely 0 but we've fetched.
+    // For simplicity, we just animate whenever the target changes!
+    if (!isActive) return;
 
     const prefersReducedMotion =
       typeof window !== "undefined" &&
@@ -87,18 +52,15 @@ const useCountUp = (target, isActive, duration = 850) => {
 
     if (prefersReducedMotion) {
       setValue(target);
-      hasRun.current = true;
       return;
     }
 
-    hasRun.current = true;
     let frame;
     const start = performance.now();
 
     const step = (now) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic for a smooth, non-mechanical finish
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(eased * target));
 
@@ -121,11 +83,10 @@ const StatCard = ({ stat, isVisible }) => {
 
   return (
     <div
-      className={`group relative flex flex-col justify-between rounded-lg border bg-white p-5 sm:p-6 transition-all duration-200 ease-out hover:-translate-y-0.5 ${
-        emphasize
-          ? "border-red-200 shadow-[0_1px_3px_rgba(220,38,38,0.08)] hover:border-red-300 hover:shadow-[0_6px_16px_rgba(220,38,38,0.10)]"
-          : "border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-slate-300 hover:shadow-[0_6px_16px_rgba(15,23,42,0.06)]"
-      }`}
+      className={`group relative flex flex-col justify-between rounded-lg border bg-white p-5 sm:p-6 transition-all duration-200 ease-out hover:-translate-y-0.5 ${emphasize
+        ? "border-red-200 shadow-[0_1px_3px_rgba(220,38,38,0.08)] hover:border-red-300 hover:shadow-[0_6px_16px_rgba(220,38,38,0.10)]"
+        : "border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:border-slate-300 hover:shadow-[0_6px_16px_rgba(15,23,42,0.06)]"
+        }`}
     >
       <div className="flex items-start justify-between">
         <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500">
@@ -158,6 +119,14 @@ const StatCard = ({ stat, isVisible }) => {
 };
 
 const OverviewStats = () => {
+
+  const [stats, setStats] = useState([
+    { id: "total", label: "TOTAL BIDDERS", value: 0, supportingText: "Processed", icon: UsersRound, accent: "blue", emphasize: false },
+    { id: "low", label: "LOW RISK", value: 0, supportingText: "0% of total", icon: ShieldCheck, accent: "green", emphasize: false },
+    { id: "medium", label: "MEDIUM RISK", value: 0, supportingText: "0% of total", icon: ShieldAlert, accent: "amber", emphasize: false },
+    { id: "high", label: "HIGH RISK", value: 0, supportingText: "Needs attention", icon: TriangleAlert, accent: "red", emphasize: true },
+  ]);
+
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -177,6 +146,29 @@ const OverviewStats = () => {
 
     observer.observe(node);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:8000/api/bidders", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+      .then(r => r.json())
+      .then(bidders => {
+        if (!Array.isArray(bidders)) return;
+        const total = bidders.length;
+        const low = bidders.filter(b => b.risk_level === "LOW").length;
+        const medium = bidders.filter(b => b.risk_level === "MEDIUM").length;
+        const high = bidders.filter(b => b.risk_level === "HIGH").length;
+        const pct = n => total > 0 ? `${Math.round(n / total * 100)}% of total` : "0% of total";
+        setStats([
+          { id: "total", label: "TOTAL BIDDERS", value: total, supportingText: "Processed", icon: UsersRound, accent: "blue", emphasize: false },
+          { id: "low", label: "LOW RISK", value: low, supportingText: pct(low), icon: ShieldCheck, accent: "green", emphasize: false },
+          { id: "medium", label: "MEDIUM RISK", value: medium, supportingText: pct(medium), icon: ShieldAlert, accent: "amber", emphasize: false },
+          { id: "high", label: "HIGH RISK", value: high, supportingText: "Needs attention", icon: TriangleAlert, accent: "red", emphasize: true },
+        ]);
+      })
+      .catch(() => { });
   }, []);
 
   return (

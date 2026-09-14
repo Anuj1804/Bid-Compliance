@@ -24,6 +24,7 @@ class RiskLevel(str, Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
+    MANUAL_REVIEW_NEEDED = "MANUAL_REVIEW_NEEDED"
 
 
 class FlagStatus(str, Enum):
@@ -51,6 +52,11 @@ class TenderOut(BaseModel):
     required_checks: List[str]
     created_at: datetime
 
+    bidder_count: int = 0
+    avg_compliance: Optional[float] = None
+    risk_summary: Optional[Dict[str, Any]] = None
+    document_path: Optional[str] = None
+
     class Config:
         from_attributes = True
 
@@ -72,6 +78,10 @@ class BidderOut(BaseModel):
     declared_pan: Optional[str]
     declared_udyam: Optional[str]
     created_at: datetime
+
+    compliance_score: Optional[int] = None
+    risk_level: Optional[str] = None
+    flag_count: int = 0
 
     class Config:
         from_attributes = True

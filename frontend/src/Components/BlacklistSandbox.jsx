@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FlaskConical,
   ShieldAlert,
@@ -23,38 +23,8 @@ import {
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
-/* Mock data                                                           */
+/* Mock data / Empty States                                           */
 /* ------------------------------------------------------------------ */
-
-const DEFAULT_RECORDS = [
-  {
-    id: "REC-001",
-    bidder: "Apex Industrial Solutions",
-    bidderId: "BID-18421-001",
-    status: "NO MATCH",
-    risk: "LOW",
-    reason: "No simulated match",
-    lastUpdated: "05 Sep 2026",
-  },
-  {
-    id: "REC-002",
-    bidder: "Zenith Infrastructure Pvt. Ltd.",
-    bidderId: "BID-SIM-00421",
-    status: "MATCH FOUND",
-    risk: "HIGH",
-    reason: "Mock blacklist entry created for demonstration",
-    lastUpdated: "05 Sep 2026",
-  },
-  {
-    id: "REC-003",
-    bidder: "National Industrial Traders",
-    bidderId: "BID-SIM-00782",
-    status: "MATCH FOUND",
-    risk: "MEDIUM",
-    reason: "Mock compliance restriction",
-    lastUpdated: "05 Sep 2026",
-  },
-];
 
 const EMPTY_FORM = {
   bidder: "",
@@ -65,7 +35,7 @@ const EMPTY_FORM = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Tone tokens (kept consistent with the rest of the platform)         */
+/* Tone tokens (kept consistent with the rest of the platform)        */
 /* ------------------------------------------------------------------ */
 
 const TONE_CLASSES = {
@@ -250,7 +220,7 @@ function AddRecordModal({ open, form, onChange, onCancel, onSubmit }) {
               type="text"
               value={form.bidderId}
               onChange={(event) => onChange({ ...form, bidderId: event.target.value })}
-              placeholder="e.g. BID-SIM-00999"
+              placeholder="e.g. 1 or BID-SIM-00999"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
             />
           </div>
@@ -266,8 +236,8 @@ function AddRecordModal({ open, form, onChange, onCancel, onSubmit }) {
                 onChange={(event) => onChange({ ...form, status: event.target.value })}
                 className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
               >
-                <option value="NO MATCH">No Match</option>
-                <option value="MATCH FOUND">Match Found</option>
+                <option value="NO MATCH">No Match (Safe)</option>
+                <option value="MATCH FOUND">Match Found (Blacklisted)</option>
               </select>
             </div>
             <div>
@@ -420,10 +390,11 @@ function RecordDetailsPanel({ record, onClose }) {
 /* ------------------------------------------------------------------ */
 
 export default function BlacklistSandbox() {
-  const [records, setRecords] = useState(DEFAULT_RECORDS);
+  const [records, setRecords] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [checkQuery, setCheckQuery] = useState("");
-  const [checkResult, setCheckResult] = useState(DEFAULT_RECORDS[0]);
+  const [checkResult, setCheckResult] = useState(null);
 
   const [tableSearch, setTableSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -435,6 +406,33 @@ export default function BlacklistSandbox() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  // FETCH RECORDS FROM BACKEND
+  const fetchBlacklist = () => {
+    setIsLoading(true);
+    fetch("http://localhost:8000/api/bidders/blacklist")
+      .then((res) => {
+        if (!res.ok) throw new Error("API not ready yet");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setRecords(data);
+        } else {
+          setRecords([]);
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setRecords([]);
+        setIsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchBlacklist();
+  }, []);
 
   const stats = useMemo(() => {
     const total = records.length;
@@ -449,8 +447,8 @@ export default function BlacklistSandbox() {
     return records.filter((record) => {
       const matchesQuery =
         !query ||
-        record.bidder.toLowerCase().includes(query) ||
-        record.bidderId.toLowerCase().includes(query);
+        String(record.bidder).toLowerCase().includes(query) ||
+        String(record.bidderId).toLowerCase().includes(query);
       const matchesStatus =
         statusFilter === "All" ||
         (statusFilter === "No Match" && record.status === "NO MATCH") ||
@@ -468,12 +466,12 @@ export default function BlacklistSandbox() {
   const runSimulatedCheck = () => {
     const query = checkQuery.trim().toLowerCase();
     if (!query) {
-      setCheckResult(records.find((r) => r.bidderId === "BID-18421-001") || records[0]);
+      setCheckResult(records[0] || null);
       return;
     }
     const found = records.find(
       (r) =>
-        r.bidder.toLowerCase().includes(query) || r.bidderId.toLowerCase().includes(query)
+        String(r.bidder).toLowerCase().includes(query) || String(r.bidderId).toLowerCase().includes(query)
     );
     if (found) {
       setCheckResult(found);
@@ -491,32 +489,48 @@ export default function BlacklistSandbox() {
     }
   };
 
+  // ADD TO BACKEND
   const handleAddRecord = () => {
     const record = {
-      id: `REC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
       bidder: newRecordForm.bidder.trim(),
       bidderId: newRecordForm.bidderId.trim(),
       status: newRecordForm.status,
       risk: newRecordForm.risk,
       reason: newRecordForm.reason.trim() || "Mock record added for demonstration",
-      lastUpdated: "05 Sep 2026",
     };
-    setRecords((prev) => [record, ...prev]);
-    setNewRecordForm(EMPTY_FORM);
-    setAddModalOpen(false);
+
+    fetch("http://localhost:8000/api/bidders/blacklist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(record),
+    })
+      .then((res) => res.json())
+      .then((addedRecord) => {
+        setRecords((prev) => [addedRecord, ...prev]);
+        setNewRecordForm(EMPTY_FORM);
+        setAddModalOpen(false);
+      })
+      .catch((err) => console.error(err));
   };
 
+  // DELETE FROM BACKEND
   const handleDeleteConfirm = () => {
     if (!deleteTarget) return;
-    setRecords((prev) => prev.filter((r) => r.id !== deleteTarget.id));
-    if (selectedRecordId === deleteTarget.id) setSelectedRecordId(null);
-    setDeleteTarget(null);
+    fetch(`http://localhost:8000/api/bidders/blacklist/${deleteTarget.id}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        setRecords((prev) => prev.filter((r) => r.id !== deleteTarget.id));
+        if (selectedRecordId === deleteTarget.id) setSelectedRecordId(null);
+        setDeleteTarget(null);
+      })
+      .catch((err) => console.error(err));
   };
 
   const handleReset = () => {
-    setRecords(DEFAULT_RECORDS);
+    fetchBlacklist(); // Re-fetch from backend
     setSelectedRecordId(null);
-    setCheckResult(DEFAULT_RECORDS[0]);
+    setCheckResult(records[0] || null);
     setCheckQuery("");
     setResetConfirmOpen(false);
   };
@@ -728,7 +742,7 @@ export default function BlacklistSandbox() {
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                Reset Sandbox
+                Reload Data
               </button>
               <button
                 type="button"
@@ -807,7 +821,13 @@ export default function BlacklistSandbox() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-500">
+                      Loading Sandbox Records...
+                    </td>
+                  </tr>
+                ) : filteredRecords.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-500">
                       No sandbox records found. Try adjusting your search or filters.
@@ -901,9 +921,9 @@ export default function BlacklistSandbox() {
 
       <ConfirmModal
         open={resetConfirmOpen}
-        title="Reset sandbox?"
-        message="Reset the sandbox to its default demonstration dataset? Any records you added or removed in this session will be lost."
-        confirmLabel="Reset"
+        title="Reload sandbox data?"
+        message="This will re-fetch the latest records from the backend database."
+        confirmLabel="Reload Data"
         tone="slate"
         onConfirm={handleReset}
         onCancel={() => setResetConfirmOpen(false)}

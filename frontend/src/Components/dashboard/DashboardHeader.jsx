@@ -36,7 +36,7 @@ const DashboardHeader = ({
     <header className="dh-animate-in w-full bg-white border-b border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
       <div className="w-full h-16 sm:h-20 md:h-[92px] lg:h-[100px] px-4 sm:px-6 lg:px-8 flex items-center gap-4 sm:gap-6">
         {/* Branding */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* <div className="flex items-center gap-3 flex-shrink-0">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0">
             <ShieldCheck
               className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-400"
@@ -54,7 +54,7 @@ const DashboardHeader = ({
               GOVERNMENT OF INDIA
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Divider between branding and greeting */}
         <span

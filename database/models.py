@@ -35,6 +35,8 @@ class Tender(Base):
     # Person 1's checklist parser output, e.g. ["GST", "PAN", "Blacklist", "Udyam"]
     required_checks = Column(JSON, nullable=False, default=list)
     created_at = Column(DateTime, default=utcnow)
+  
+    document_path = Column(String, nullable=True)        
 
     bidders = relationship("Bidder", back_populates="tender", cascade="all, delete-orphan")
 

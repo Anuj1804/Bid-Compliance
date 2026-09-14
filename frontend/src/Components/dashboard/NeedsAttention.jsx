@@ -8,53 +8,7 @@ import {
 } from "lucide-react";
 
 // Mock / demo data — structured so it can be swapped for API data later.
-const attentionItems = [
-  {
-    id: 1,
-    risk: "HIGH",
-    bidder: "Apex Industrial Solutions Pvt. Ltd.",
-    tender: "GEM/2026/B/18421",
-    check: "GST",
-    issue: "GST registration details mismatch",
-    status: "MISMATCH",
-  },
-  {
-    id: 2,
-    risk: "MEDIUM",
-    bidder: "Bharat Energy Systems",
-    tender: "GEM/2026/B/18397",
-    check: "PAN",
-    issue: "PAN name differs from submitted document",
-    status: "REVIEW REQUIRED",
-  },
-  {
-    id: 3,
-    risk: "MEDIUM",
-    bidder: "Nova Engineering Works",
-    tender: "GEM/2026/B/18355",
-    check: "UDYAM",
-    issue: "Udyam verification pending",
-    status: "PENDING",
-  },
-  {
-    id: 4,
-    risk: "HIGH",
-    bidder: "Shree Infrastructure Ltd.",
-    tender: "GEM/2026/B/18288",
-    check: "BLACKLIST",
-    issue: "Possible blacklist match requires review",
-    status: "REVIEW REQUIRED",
-  },
-  {
-    id: 5,
-    risk: "MEDIUM",
-    bidder: "Vertex Process Equipment",
-    tender: "GEM/2026/B/18204",
-    check: "OEM AUTHORIZATION",
-    issue: "OEM authorization document missing",
-    status: "MISSING",
-  },
-];
+
 
 const riskStyles = {
   HIGH: {
@@ -102,9 +56,8 @@ const RiskBadge = ({ risk }) => {
 
 const StatusBadge = ({ status }) => (
   <span
-    className={`inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-semibold tracking-wide ${
-      statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-600"
-    }`}
+    className={`inline-flex items-center rounded-md border px-2 py-1 text-[11px] font-semibold tracking-wide ${statusStyles[status] ?? "border-slate-200 bg-slate-50 text-slate-600"
+      }`}
   >
     {status}
   </span>
@@ -113,13 +66,12 @@ const StatusBadge = ({ status }) => (
 const AttentionRow = ({ item, isVisible, index }) => {
   return (
     <div
-      className={`group border-b border-slate-100 px-4 sm:px-5 py-4 transition-all duration-500 ease-out last:border-b-0 hover:-translate-y-0 md:hover:translate-x-[2px] hover:bg-slate-50/60 hover:shadow-[0_1px_0_rgba(15,23,42,0.02)] ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-      }`}
+      className={`group border-b border-slate-100 px-4 sm:px-5 py-4 transition-all duration-500 ease-out last:border-b-0 hover:-translate-y-0 md:hover:translate-x-[2px] hover:bg-slate-50/60 hover:shadow-[0_1px_0_rgba(15,23,42,0.02)] ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+        }`}
       style={{ transitionDelay: isVisible ? `${index * 70}ms` : "0ms" }}
     >
       {/* Desktop / tablet grid row */}
-      <div className="hidden lg:grid lg:grid-cols-[100px_1.5fr_1.05fr_0.95fr_1.7fr_1.15fr_90px] lg:items-center lg:gap-4">
+      <div className="hidden lg:grid lg:grid-cols-[100px_1.5fr_1.05fr_0.95fr_1.7fr_1.15fr] lg:items-center lg:gap-4">
         <RiskBadge risk={item.risk} />
 
         <div className="min-w-0">
@@ -139,17 +91,6 @@ const AttentionRow = ({ item, isVisible, index }) => {
         <p className="truncate text-sm text-slate-600">{item.issue}</p>
 
         <StatusBadge status={item.status} />
-
-        <div className="flex justify-end">
-          <button
-            type="button"
-            aria-label={`Review flagged item for ${item.bidder}`}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
-          >
-            Review
-            <ArrowUpRight className="h-3.5 w-3.5" size={14} aria-hidden="true" />
-          </button>
-        </div>
       </div>
 
       {/* Mobile / tablet stacked card */}
@@ -173,22 +114,40 @@ const AttentionRow = ({ item, isVisible, index }) => {
 
         <p className="mt-2 text-sm text-slate-600">{item.issue}</p>
 
-        <button
-          type="button"
-          aria-label={`Review flagged item for ${item.bidder}`}
-          className="mt-3 inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
-        >
-          Review
-          <ArrowUpRight className="h-3.5 w-3.5" size={14} aria-hidden="true" />
-        </button>
+        
       </div>
     </div>
   );
 };
 
 const NeedsAttention = () => {
+  const [attentionItems, setAttentionItems] = useState([]);
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  // Fetch the live flagged bidders
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:8000/api/bidders", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+      .then((r) => r.json())
+      .then((bidders) => {
+        if (!Array.isArray(bidders)) return;
+        const flagged = bidders
+          .filter((b) => b.risk_level === "HIGH" || b.risk_level === "MEDIUM")
+          .map((b) => ({
+            id: b.id,
+            risk: b.risk_level,
+            bidder: b.company_name,
+            tender: `TENDER-0000${b.tender_id}`,
+            check: "COMPLIANCE",
+            issue: `${b.flag_count} flagged item(s) require review`,
+            status: "REVIEW REQUIRED",
+          }));
+        setAttentionItems(flagged);
+      })
+      .catch(() => { });
+  }, []);
 
   useEffect(() => {
     const node = sectionRef.current;
@@ -247,24 +206,24 @@ const NeedsAttention = () => {
         {/* Card top bar */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 sm:px-5 py-3">
           <span
-            className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-amber-700"
+            className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-700"
             title="These flagged items are placeholder demo data, not live verification results."
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-            SIMULATED DATA
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+            LIVE DATA
           </span>
           <span className="text-xs text-slate-400">Last updated: Just now</span>
         </div>
 
         {/* Desktop column headings */}
-        <div className="hidden lg:grid lg:grid-cols-[100px_1.5fr_1.05fr_0.95fr_1.7fr_1.15fr_90px] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
+        <div className="hidden lg:grid lg:grid-cols-[100px_1.5fr_1.05fr_0.95fr_1.7fr_1.15fr] lg:items-center lg:gap-4 border-b border-slate-100 bg-slate-50/60 px-4 sm:px-5 py-2.5">
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">RISK</span>
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">BIDDER</span>
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">TENDER</span>
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">CHECK</span>
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">ISSUE</span>
           <span className="text-[10px] font-semibold tracking-[0.1em] text-slate-400">STATUS</span>
-          <span className="text-right text-[10px] font-semibold tracking-[0.1em] text-slate-400">ACTION</span>
+          
         </div>
 
         {/* Rows */}
@@ -277,15 +236,7 @@ const NeedsAttention = () => {
         </div>
 
         {/* Footer link */}
-        <div className="flex justify-end border-t border-slate-100 px-4 sm:px-5 py-3">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 rounded-md"
-          >
-            View all flagged items
-            <ArrowRight className="h-3.5 w-3.5" size={14} aria-hidden="true" />
-          </button>
-        </div>
+        
       </div>
 
       <style>{`
