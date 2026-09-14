@@ -21,10 +21,12 @@ const riskStyles = {
 const statusStyles = {
   COMPLIANT: "border-emerald-200 bg-emerald-50 text-emerald-700",
   "NEEDS REVIEW": "border-amber-200 bg-amber-50 text-amber-700",
-  FLAGGED: "border-red-200 bg-red-50 text-red-700",
+  FLAGGED: "border-orange-200 bg-orange-50 text-orange-700",
+  PENDING: "border-slate-200 bg-slate-50 text-slate-600",
+  "NON COMPLIANT": "border-red-200 bg-red-50 text-red-700",
 };
 
-const statusFilterOptions = ["All Compliance", "Compliant", "Needs Review", "Flagged"];
+const statusFilterOptions = ["All Compliance", "Compliant", "Needs Review", "Flagged", "Non Compliant", "Pending"];
 const riskFilterOptions = [
   "All Risk",
   "Low",
@@ -244,21 +246,6 @@ const Bidders = () => {
         const data = await bidderResponse.json();
 
         const formattedBidders = data.map((bidder) => {
-          const verification = bidder.latest_verification;
-          const flags = bidder.flags || [];
-
-          let status = "NEEDS REVIEW";
-
-          if (verification) {
-            if (flags.length > 0) {
-              status = "FLAGGED";
-            } else if (verification.compliance_score >= 75) {
-              status = "COMPLIANT";
-            } else {
-              status = "NEEDS REVIEW";
-            }
-          }
-
           return {
             id: bidder.id,
             company: bidder.company_name || "Unknown Company",
@@ -267,7 +254,7 @@ const Bidders = () => {
             score: bidder.compliance_score ?? null,
             risk: bidder.risk_level === "MANUAL_REVIEW_NEEDED" ? "HIGH" : (bidder.risk_level ?? "UNVERIFIED"),
             flags: bidder.flag_count ?? 0,
-            status,
+            status: bidder.status ? bidder.status.replace("_", " ") : "NEEDS REVIEW",
           };
         });
 

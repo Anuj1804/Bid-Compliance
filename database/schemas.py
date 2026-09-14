@@ -82,6 +82,7 @@ class BidderOut(BaseModel):
     compliance_score: Optional[int] = None
     risk_level: Optional[str] = None
     flag_count: int = 0
+    status: str = "NEEDS_REVIEW"
 
     class Config:
         from_attributes = True
@@ -203,6 +204,7 @@ class BidderDetailOut(BaseModel):
     declared_gstin: Optional[str]
     declared_pan: Optional[str]
     declared_udyam: Optional[str]
+    status: str = "NEEDS_REVIEW"
     documents: List[DocumentOut] = []
     latest_verification: Optional[VerificationResultOut] = None
     flags: List[FlagOut] = []

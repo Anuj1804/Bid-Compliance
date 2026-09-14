@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from sqlalchemy.orm import Session
@@ -79,6 +80,7 @@ def list_bidders(
             compliance_score=latest.compliance_score if latest else None,
             risk_level=latest.risk_level if latest else None,
             flag_count=flag_count,
+            status=b.status,
         ))
     return enriched
 
@@ -119,6 +121,12 @@ def upload_document(
         extraction_confidence=confidence,
     )
     db.add(document)
+    
+    # Re-fetch bidder and reset status because AI scan needs to be re-run
+    bidder = db.query(Bidder).filter(Bidder.id == bidder_id).first()
+    if bidder:
+        bidder.status = "NEEDS_REVIEW"
+
     db.commit()
 
     audit_service.log_document_uploaded(
@@ -164,10 +172,18 @@ def verify_bidder(
 
     result = verification_service.run_orchestrator(merged_extracted)
 
+    risk_level_val = result.get("risk_level", "HIGH")
+    
+    # Update bidder status based on AI risk
+    if risk_level_val in ["MEDIUM", "HIGH"]:
+        bidder.status = "FLAGGED"
+    else:
+        bidder.status = "NEEDS_REVIEW"
+
     verification = VerificationResult(
         bidder_id=bidder_id,
         compliance_score=result.get("compliance_score", 0),
-        risk_level=result.get("risk_level", "HIGH"),
+        risk_level=risk_level_val,
         recommendation=result.get("recommendation"),
         checks=result.get("checks", []),
     )
@@ -248,6 +264,7 @@ def get_bidder_detail(
         declared_gstin=bidder.declared_gstin,
         declared_pan=bidder.declared_pan,
         declared_udyam=bidder.declared_udyam,
+        status=bidder.status,
         documents=documents,
         latest_verification=latest_verification,
         flags=flags,
@@ -288,6 +305,10 @@ def submit_officer_decision(
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(get_current_user),
 ):
+    bidder = db.query(Bidder).filter(Bidder.id == bidder_id).first()
+    if not bidder:
+        raise HTTPException(status_code=404, detail="Bidder not found")
+
     # 1. Log the decision in the Audit Trail
     log = AuditLog(
         bidder_id=bidder_id,
@@ -300,12 +321,16 @@ def submit_officer_decision(
     
     # 2. FIX: Agar Officer ne "APPROVE" kiya hai, toh saare Open Flags ko "Resolved" mark kar do
     if payload.decision == "APPROVED":
+        bidder.status = "COMPLIANT"
         open_flags = db.query(Flag).filter(Flag.bidder_id == bidder_id, Flag.status == "open").all()
         for flag in open_flags:
             flag.status = "resolved"
             flag.resolved_by = current_user.username
-            flag.resolved_at = datetime.now()
+            flag.resolved_at = datetime.now(timezone.utc)
             flag.officer_note = f"Auto-resolved via Final Decision: {payload.note}"
+    else:
+        bidder.status = "NON_COMPLIANT"
             
     db.commit()
-    return {"status": "success", "decision": payload.decision}
+    
+    return {"status": "ok", "message": "Decision logged successfully and status updated"}

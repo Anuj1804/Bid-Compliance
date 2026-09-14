@@ -102,6 +102,8 @@ export default function OfficerReview() {
   const [noteWarning, setNoteWarning] = useState(false);
   const [decisionSubmitted, setDecisionSubmitted] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resolvingFlagId, setResolvingFlagId] = useState(null);
+  const [flagNote, setFlagNote] = useState("");
 
   // Fetch real data from backend WITH TOKEN
   useEffect(() => {
@@ -153,6 +155,40 @@ export default function OfficerReview() {
       })
       .then(() => {
         setDecisionSubmitted(decision);
+        setIsSubmitting(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsSubmitting(false);
+      });
+  };
+
+  const handleOverrideFlag = (flagId) => {
+    if (!flagNote.trim()) return;
+    setIsSubmitting(true);
+
+    const token = localStorage.getItem("token");
+
+    fetch(`http://localhost:8000/api/flags/${flagId}`, {
+      method: "PATCH",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": token ? `Bearer ${token}` : ""
+      },
+      body: JSON.stringify({ status: "resolved", officer_note: flagNote }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to resolve flag");
+        return res.json();
+      })
+      .then((updatedFlag) => {
+        // Update local state so it disappears from open flags
+        setBidderData(prev => ({
+          ...prev,
+          flags: prev.flags.map(f => f.id === flagId ? updatedFlag : f)
+        }));
+        setResolvingFlagId(null);
+        setFlagNote("");
         setIsSubmitting(false);
       })
       .catch((err) => {
@@ -242,16 +278,57 @@ export default function OfficerReview() {
                 ) : (
                   <div className="space-y-3">
                     {(bidderData.flags || []).filter((f) => f.status === "open").map((flag) => (
-                      <div key={flag.id} className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                        <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
-                        <div>
-                          <h4 className="text-sm font-semibold text-amber-900">{flag.check_type}</h4>
-                          <p className="mt-1 text-sm text-amber-800">{flag.reason}</p>
-                          <div className="mt-2 flex gap-2">
-                            <span className="inline-flex rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                              {flag.severity} RISK
-                            </span>
+                      <div key={flag.id} className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+                          <div>
+                            <h4 className="text-sm font-semibold text-amber-900">{flag.check_type}</h4>
+                            <p className="mt-1 text-sm text-amber-800">{flag.reason}</p>
+                            <div className="mt-2 flex gap-2">
+                              <span className="inline-flex rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                                {flag.severity} RISK
+                              </span>
+                            </div>
                           </div>
+                        </div>
+                        
+                        <div className="mt-2 sm:mt-0 flex flex-col items-end shrink-0">
+                          {resolvingFlagId === flag.id ? (
+                            <div className="flex flex-col gap-2 w-full sm:w-64">
+                              <input
+                                type="text"
+                                value={flagNote}
+                                onChange={(e) => setFlagNote(e.target.value)}
+                                placeholder="Reason to override..."
+                                className="w-full rounded-md border border-amber-300 px-2.5 py-1.5 text-xs focus:border-blue-500 focus:outline-none"
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button 
+                                  onClick={() => setResolvingFlagId(null)}
+                                  className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  onClick={() => handleOverrideFlag(flag.id)}
+                                  disabled={!flagNote.trim() || isSubmitting}
+                                  className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                                >
+                                  Confirm
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setResolvingFlagId(flag.id);
+                                setFlagNote("");
+                              }}
+                              className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 shadow-sm hover:bg-amber-100"
+                            >
+                              Override AI (Accept)
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -308,25 +385,37 @@ export default function OfficerReview() {
                       </div>
                     ) : null}
 
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row pt-4 border-t border-slate-100">
+                    <div className="mt-6 flex flex-col gap-3 pt-4 border-t border-slate-100">
+                      
+                      {!bidderData.latest_verification && (
+                        <div className="mb-2 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3.5 py-2.5">
+                          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                          <p className="text-xs font-semibold leading-relaxed text-red-800">
+                            System Lock: You cannot approve or reject this bidder because the AI verification has not been run yet. Please run the AI verification from the Bidder Details page first.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <button
+                          type="button"
+                          disabled={isSubmitting || !bidderData.latest_verification}
+                          onClick={() => handleDecision("APPROVED")}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-500 disabled:opacity-50 sm:w-auto disabled:cursor-not-allowed"
+                        >
+                          <CheckCircle2 className="h-5 w-5" />
+                          Approve & Qualify
+                        </button>
                       <button
                         type="button"
-                        disabled={isSubmitting}
-                        onClick={() => handleDecision("APPROVED")}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-emerald-500 disabled:opacity-50 sm:w-auto"
-                      >
-                        <CheckCircle2 className="h-5 w-5" />
-                        Approve & Qualify
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !bidderData.latest_verification}
                         onClick={() => handleDecision("REJECTED")}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-500 disabled:opacity-50 sm:w-auto"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-500 disabled:opacity-50 sm:w-auto disabled:cursor-not-allowed"
                       >
                         <XCircle className="h-5 w-5" />
-                        Reject & Disqualify
+                        Disqualify Bidder
                       </button>
+                      </div>
                     </div>
                   </>
                 )}

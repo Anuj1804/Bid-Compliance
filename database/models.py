@@ -50,6 +50,7 @@ class Bidder(Base):
     declared_gstin = Column(String, nullable=True)
     declared_pan = Column(String, nullable=True)
     declared_udyam = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="PENDING")
     created_at = Column(DateTime, default=utcnow)
 
     tender = relationship("Tender", back_populates="bidders")

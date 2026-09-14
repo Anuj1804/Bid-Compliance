@@ -438,8 +438,8 @@ export default function BidderDetails() {
               </div>
               {/* Dedicated Officer Review Page Button */}
               <button
-                onClick={() => navigate(`/reviews/${bidderId}`)} 
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-500 px-8 py-3 text-sm font-semibold text-white hover:bg-indigo-400 shadow-md transition-all"
+                onClick={() => navigate(`/officer-review/${bidderId}`)} 
+                className="group inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-500 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
               >
                 Proceed to Officer Review
                 <ChevronRight className="h-4 w-4" />
