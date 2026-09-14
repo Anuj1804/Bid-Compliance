@@ -5,3 +5,6 @@ ocr-env/
 *.db
 *.sqlite
 uploads/
+
+.venv/
+archived_tests/
