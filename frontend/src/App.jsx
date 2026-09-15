@@ -14,7 +14,7 @@ import AuditTrailPage from "./pages/Audittrail";
 import BlacklistSandbox from "./pages/BlacklistSandbox";
 import AdminPanel from "./Components/AdminPanel";
 import Reviews from "./Components/reviews";
-
+import AllBidders from "./pages/AllBidders";
 
 function App() {
   return (
@@ -29,6 +29,7 @@ function App() {
         <Route path="/tenders/:tenderId/bidders" element={<Bidders />} />
         <Route path="/tenders/:tenderId/bidders/:bidderId" element={<BidderDetails />} />
         <Route path="/tenders/:tenderId/bidders/:bidderId/verify" element={<DocumentVerification />} />
+        <Route path="/bidders" element={<AllBidders />} />
         <Route path="/declared-verified" element={<DeclaredVerified />} />
         <Route path="/officer-review/:bidderId" element={<OfficerReview />} />
         <Route path="/tenders/:tenderId/audit-trail/:bidderId" element={<AuditTrailPage />} />

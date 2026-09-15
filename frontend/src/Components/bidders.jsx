@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   FilterX,
   FileText,
+  ArrowLeft,
 } from "lucide-react";
 
 
@@ -354,14 +355,17 @@ const Bidders = () => {
     <main className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {/* Page header */}
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        {/* <button
-              onClick={() => navigate(`/tenders/`)}
-              className="group inline-flex items-center gap-2 rounded-md text-sm font-medium text-slate-400 transition-colors hover:text-slate-100"
-            >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              Back to Bidders
-       </button> */}
-        <div>
+        <button
+  type="button"
+  onClick={() => navigate("/tenders")}
+  className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 rounded-md"
+>
+  <ArrowLeft className="h-4 w-4" size={16} aria-hidden="true" />
+  Back to Tenders
+</button>
+
+<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+  <div></div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Bidders</h1>
           <p className="mt-1 text-sm text-slate-500">
             Review bidder compliance, risk, and verification status for the selected tender.

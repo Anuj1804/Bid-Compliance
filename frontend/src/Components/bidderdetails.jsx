@@ -222,12 +222,12 @@ export default function BidderDetails() {
           {/* HEADER */}
           <div className="mb-6">
             <button
-              onClick={() => navigate(`/tenders/${tenderId}/bidders`)}
-              className="group inline-flex items-center gap-2 rounded-md text-sm font-medium text-slate-400 transition-colors hover:text-slate-100"
-            >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              Back to Bidders
-            </button>
+  onClick={() => navigate(-1)}
+  className="group inline-flex items-center gap-2 rounded-md text-sm font-medium text-slate-400 transition-colors hover:text-slate-100"
+>
+  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+  Back to Bidders
+</button>
 
             <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
               <div>
