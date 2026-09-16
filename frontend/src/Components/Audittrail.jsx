@@ -33,8 +33,8 @@ const HONESTY_LEGEND = [
   { code: "MISMATCH", tone: "red", description: "Two sources disagree and require review." },
 ];
 
-const CATEGORIES = ["All Events", "Document", "Validation", "Check", "Mismatch", "Assessment", "AI Advisory", "Officer"];
-const SOURCES = ["All", "System", "Officer", "AI"];
+const CATEGORIES = ["All Events", "Document", "Validation", "Check", "Mismatch", "Assessment", "Advisory", "Officer"];
+const SOURCES = ["All", "System", "Officer"];
 
 /* ------------------------------------------------------------------ */
 /* Small presentational components                                    */
@@ -63,9 +63,9 @@ function CategoryTag({ category }) {
 }
 
 function ActorBadge({ actor, actorType }) {
-  const iconMap = { Officer: User, System: Server, AI: Bot };
+  const iconMap = { Officer: User, System: Server };
   const Icon = iconMap[actorType] || Server;
-  const styleMap = { Officer: "bg-blue-50 text-blue-700", System: "bg-slate-100 text-slate-600", AI: "bg-violet-50 text-violet-700" };
+  const styleMap = { Officer: "bg-blue-50 text-blue-700", System: "bg-slate-100 text-slate-600" };
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${styleMap[actorType] || "bg-slate-100 text-slate-600"}`}>
       <Icon className="h-3.5 w-3.5" />{actor}
@@ -256,7 +256,7 @@ export default function AuditTrail() {
                 id: `AUD-000${counter++}`, timestamp: formatDate(1800000 - idx * 1000),
                 title: `${check.check} Mismatch Detected`, description: check.reason,
                 actor: "Compliance Engine", actorType: "System", status: "MISMATCH", category: "Mismatch", icon: GitCompareArrows, highlight: true,
-                metadata: [{ label: "Verification method", value: "AI Cross-reference" }]
+                metadata: [{ label: "Verification method", value: "System Cross-reference" }]
               });
             } else {
 
@@ -304,10 +304,10 @@ export default function AuditTrail() {
           newEvents.push({
             id: `AUD-000${counter++}`,
             timestamp: formatDate(500000),
-            title: "AI advisory recommendation generated",
+            title: "Advisory recommendation generated",
             description: "Review flagged checks before final qualification.",
-            actor: "AI Advisory", actorType: "AI", status: "ADVISORY ONLY", category: "AI Advisory", icon: Sparkles,
-            advisory: { text: "The AI recommendation does not qualify or disqualify the bidder. Final decision belongs to the Procurement Officer." }
+            actor: "Advisory System", actorType: "System", status: "ADVISORY ONLY", category: "Advisory", icon: Sparkles,
+            advisory: { text: "The recommendation does not qualify or disqualify the bidder. Final decision belongs to the Procurement Officer." }
           });
 
           setExpandedIds(new Set([`AUD-000${counter - 1}`]));

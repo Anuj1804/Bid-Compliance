@@ -226,7 +226,7 @@ export default function OfficerReview() {
                   Dashboard / Bidders / {bidderData.company_name} / Final Review
                 </p>
                 <h1 className="mt-2 text-xl font-semibold text-slate-900 sm:text-2xl">Officer Final Decision</h1>
-                <p className="mt-1 text-sm text-slate-500">Review AI findings and make a qualification decision.</p>
+                <p className="mt-1 text-sm text-slate-500">Review system findings and make a qualification decision.</p>
               </div>
               <button 
                 onClick={() => navigate(-1)} 
@@ -253,7 +253,7 @@ export default function OfficerReview() {
                   <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                     <ScoreRing score={bidderData.latest_verification?.compliance_score} />
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Overall AI Score</p>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Overall System Score</p>
                       <div className="mt-1"><RiskPill risk={bidderData.latest_verification?.risk_level} /></div>
                       <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-600">
                         <ShieldCheck className="h-3.5 w-3.5 shrink-0" /> Requires Officer Verdict
@@ -263,10 +263,10 @@ export default function OfficerReview() {
                 </div>
               </SectionCard>
 
-              {/* AI DECISION SUPPORT - ACTIVE FLAGS */}
+              {/* SYSTEM DECISION SUPPORT - ACTIVE FLAGS */}
               <SectionCard 
-                title="AI Decision Support (Active Issues)" 
-                description="The following issues were flagged by the AI engine and require your attention."
+                title="System Decision Support (Active Issues)" 
+                description="The following issues were flagged by the compliance engine and require your attention."
                 icon={Sparkles}
                 className={(bidderData.flags || []).filter((f) => f.status === "open").length > 0 ? "border-amber-200" : "border-emerald-200"}
               >
@@ -326,7 +326,7 @@ export default function OfficerReview() {
                               }}
                               className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 shadow-sm hover:bg-amber-100"
                             >
-                              Override AI (Accept)
+                              Override System (Accept)
                             </button>
                           )}
                         </div>
@@ -337,7 +337,7 @@ export default function OfficerReview() {
                 <div className="mt-4 flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3.5 py-2.5">
                   <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
                   <p className="text-xs leading-relaxed text-slate-600">
-                    AI findings are advisory only. The Procurement Officer retains full authority for the final qualification decision.
+                    System findings are advisory only. The Procurement Officer retains full authority for the final qualification decision.
                   </p>
                 </div>
               </SectionCard>
@@ -391,7 +391,7 @@ export default function OfficerReview() {
                         <div className="mb-2 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3.5 py-2.5">
                           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
                           <p className="text-xs font-semibold leading-relaxed text-red-800">
-                            System Lock: You cannot approve or reject this bidder because the AI verification has not been run yet. Please run the AI verification from the Bidder Details page first.
+                            System Lock: You cannot approve or reject this bidder because the system verification has not been run yet. Please run the verification from the Bidder Details page first.
                           </p>
                         </div>
                       )}
