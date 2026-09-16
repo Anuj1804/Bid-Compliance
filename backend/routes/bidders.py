@@ -159,13 +159,43 @@ def verify_bidder(
     db.commit()
 
     documents = db.query(Document).filter(Document.bidder_id == bidder_id).all()
+    
+    # Map document types to their primary extraction key
+    primary_key_map = {
+        "GST": "gstin",
+        "PAN": "pan",
+        "Udyam": "udyam"
+    }
+    
     merged_extracted = {}
     for doc in documents:
         if not doc.extracted_fields:
             continue
         for k, v in doc.extracted_fields.items():
-            if k not in merged_extracted or (isinstance(v, dict) and v.get("confidence", 0) > merged_extracted.get(k, {}).get("confidence", 0)):
-                merged_extracted[k] = v
+            if not isinstance(v, dict):
+                continue
+                
+            confidence = v.get("confidence", 0)
+            
+            # Give a massive boost if this document is the primary source for this key
+            if primary_key_map.get(doc.document_type) == k:
+                confidence += 2.0
+                
+            # Tie-breaking for company_name: GST > PAN > Udyam
+            if k == "company_name":
+                if doc.document_type == "GST":
+                    confidence += 0.2
+                elif doc.document_type == "PAN":
+                    confidence += 0.1
+                
+            current_best = merged_extracted.get(k, {}).get("_sort_confidence", -1)
+            
+            if k not in merged_extracted or confidence > current_best:
+                merged_extracted[k] = {**v, "_sort_confidence": confidence}
+
+    # Clean up the temporary sort key
+    for k in merged_extracted:
+        merged_extracted[k].pop("_sort_confidence", None)
 
     # Release DB read lock before orchestrator runs
     db.commit()
