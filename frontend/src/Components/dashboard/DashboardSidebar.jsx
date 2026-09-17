@@ -37,36 +37,36 @@ const navSections = [
       icon: UsersRound,
       path: "/bidders",
     },
-    {
-      id: "reviews",
-      label: "Reviews",
-      icon: ClipboardCheck,
-      path: "/reviews",
-    },
+    // {
+    //   id: "reviews",
+    //   label: "Reviews",
+    //   icon: ClipboardCheck,
+    //   path: "/reviews",
+    // },
   ],
 },
-  {
-  title: "COMPLIANCE",
-  items: [
-    {
-      id: "blacklist-sandbox",
-      label: "Blacklist Sandbox",
-      icon: ShieldAlert,
-      path: "/blacklist-sandbox",
-    },
-  ],
-},
-  {
-    title: "SYSTEM",
-    items: [
-  {
-    id: "admin-panel",
-    label: "Admin Panel",
-    icon: Settings2,
-    path: "/admin-panel",
-  },
-],
-  },
+//   {
+//   title: "COMPLIANCE",
+//   items: [
+//     {
+//       id: "blacklist-sandbox",
+//       label: "Blacklist Sandbox",
+//       icon: ShieldAlert,
+//       path: "/blacklist-sandbox",
+//     },
+//   ],
+// },
+//   {
+//     title: "SYSTEM",
+//     items: [
+//   {
+//     id: "admin-panel",
+//     label: "Admin Panel",
+//     icon: Settings2,
+//     path: "/admin-panel",
+//   },
+// ],
+//   },
 ];
 
 const DashboardSidebar = ({

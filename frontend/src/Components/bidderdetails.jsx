@@ -31,34 +31,34 @@ const STATUS_STYLES = {
   VERIFIED: {
     icon: CheckCircle2,
     label: "VERIFIED",
-    classes: "bg-emerald-950/60 text-emerald-300 border-emerald-800/70", // Green
+    classes: "bg-emerald-50 text-emerald-700 border-emerald-200", // Green
   },
   VALIDATED: {
     icon: BadgeCheck,
     label: "VALIDATED",
-    classes: "bg-yellow-950/60 text-yellow-300 border-yellow-800/70", // Yellow
+    classes: "bg-yellow-50 text-yellow-700 border-yellow-200", // Yellow
   },
   SIMULATED: {
     icon: Circle,
     label: "SIMULATED",
-    classes: "bg-orange-950/60 text-orange-300 border-orange-800/70", // Orange
+    classes: "bg-orange-50 text-orange-700 border-orange-200", // Orange
   },
   MISMATCH: {
     icon: AlertTriangle,
     label: "MISMATCH",
-    classes: "bg-red-950/60 text-red-300 border-red-800/70", // Red
+    classes: "bg-red-50 text-red-700 border-red-200", // Red
   },
   RESOLVED: {
     icon: CheckCircle2,
     label: "RESOLVED BY OFFICER",
-    classes: "bg-emerald-950/60 text-emerald-300 border-emerald-800/70", // Green
+    classes: "bg-emerald-50 text-emerald-700 border-emerald-200", // Green
   },
 };
 
 const RISK_STYLES = {
-  LOW: "bg-slate-800 text-slate-300 border-slate-700",
-  MEDIUM: "bg-amber-950/50 text-amber-300 border-amber-800/60",
-  HIGH: "bg-red-950/50 text-red-300 border-red-800/60",
+  LOW: "bg-slate-50 text-slate-700 border-slate-200",
+  MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
+  HIGH: "bg-red-50 text-red-700 border-red-200",
 };
 
 function StatusBadge({ status, size = "sm" }) {
@@ -135,14 +135,14 @@ function SectionHeading({ title, description, icon: Icon }) {
   return (
     <div className="mb-4 flex items-start gap-3">
       {Icon ? (
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-indigo-400">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm">
           <Icon className="h-4.5 w-4.5" aria-hidden="true" />
         </span>
       ) : null}
       <div>
-        <h2 className="text-base font-semibold text-slate-100 sm:text-lg">{title}</h2>
+        <h2 className="text-base font-semibold text-slate-900 sm:text-lg">{title}</h2>
         {description ? (
-          <p className="mt-0.5 text-sm text-slate-400">{description}</p>
+          <p className="mt-0.5 text-sm text-slate-500">{description}</p>
         ) : null}
       </div>
     </div>
@@ -209,10 +209,10 @@ export default function BidderDetails() {
   const verifiedCount = realChecks.filter((c) => getDisplayStatus(c) !== "MISMATCH").length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
       {loadingBidder && (
         <div className="flex items-center justify-center min-h-screen">
-          <p className="text-slate-400 text-sm animate-pulse">Loading bidder data...</p>
+          <p className="text-slate-500 text-sm animate-pulse">Loading bidder data...</p>
         </div>
       )}
 
@@ -223,7 +223,7 @@ export default function BidderDetails() {
           <div className="mb-6">
             <button
   onClick={() => navigate(-1)}
-  className="group inline-flex items-center gap-2 rounded-md text-sm font-medium text-slate-400 transition-colors hover:text-slate-100"
+  className="group inline-flex items-center gap-2 rounded-md text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
 >
   <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
   Back to Bidders
@@ -231,34 +231,34 @@ export default function BidderDetails() {
 
             <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
               <div>
-                <h1 className="text-xl font-semibold text-white sm:text-2xl">Bidder Details</h1>
-                <p className="mt-1 max-w-2xl text-sm text-slate-400">
+                <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Bidder Details</h1>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500">
                   Review bidder identity, statutory compliance, verification evidence, and risk indicators.
                 </p>
               </div>
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-emerald-800/60 bg-emerald-950/50 px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-300">
-                <Circle className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700">
+                <Circle className="h-3 w-3 shrink-0 text-emerald-500" aria-hidden="true" />
                 LIVE DATA
               </span>
             </div>
           </div>
 
           <Reveal>
-            <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm sm:p-6 mb-8">
+            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 mb-8">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-indigo-400">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-600">
                     <Building2 className="h-6 w-6" />
                   </span>
                   <div>
-                    <h2 className="text-lg font-semibold text-white sm:text-xl">
+                    <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
                       {bidderData.company_name}
                     </h2>
-                    <p className="mt-0.5 text-sm text-slate-400">
+                    <p className="mt-0.5 text-sm text-slate-500">
                       {"BID-" + bidderId} &middot; GSTIN {bidderData.declared_gstin || "Not provided"}
                     </p>
-                    <p className="mt-2 text-sm text-slate-300">
-                      <span className="text-slate-500">Tender:</span> {tenderId}
+                    <p className="mt-2 text-sm text-slate-600">
+                      <span className="text-slate-500 font-medium">Tender:</span> {tenderId}
                     </p>
                   </div>
                 </div>
@@ -266,8 +266,8 @@ export default function BidderDetails() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:flex lg:gap-8">
                   <div className="flex flex-col">
                     <span className="text-xs font-medium uppercase tracking-wider text-slate-500">Docs Submitted</span>
-                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-white">
-                      <FileCheck2 className="h-4 w-4 text-emerald-400" />
+                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-slate-900">
+                      <FileCheck2 className="h-4 w-4 text-emerald-500" />
                       {docsSubmitted}
                     </span>
                   </div>
@@ -275,15 +275,15 @@ export default function BidderDetails() {
                     <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                       Checks Passed
                     </span>
-                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-white">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-slate-900">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                       {verifiedCount} / {realChecks.length}
                     </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-medium uppercase tracking-wider text-slate-500">Active Flags</span>
-                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-white">
-                      <AlertTriangle className={`h-4 w-4 ${hasActiveFlags ? 'text-red-400' : 'text-slate-400'}`} />
+                    <span className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-slate-900">
+                      <AlertTriangle className={`h-4 w-4 ${hasActiveFlags ? 'text-red-500' : 'text-slate-400'}`} />
                       {activeMismatches.length}
                     </span>
                   </div>
@@ -296,22 +296,22 @@ export default function BidderDetails() {
           {realChecks.length > 0 && (
             <Reveal className="mb-8">
               <SectionHeading title="Risk Assessment" icon={ScanEye} description="Decision-support summary generated from available verification results." />
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-                <div className="flex flex-col border-b border-slate-800 sm:flex-row">
-                  <div className="flex flex-1 flex-col justify-center border-b border-slate-800 p-6 sm:border-b-0 sm:border-r">
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                <div className="flex flex-col border-b border-slate-200 sm:flex-row">
+                  <div className="flex flex-1 flex-col justify-center border-b border-slate-200 p-6 sm:border-b-0 sm:border-r">
                     <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Risk Level</p>
                     <div className="mt-2"><RiskPill risk={risk} /></div>
                   </div>
-                  <div className="flex flex-1 flex-col justify-center border-b border-slate-800 p-6 sm:border-b-0 sm:border-r">
+                  <div className="flex flex-1 flex-col justify-center border-b border-slate-200 p-6 sm:border-b-0 sm:border-r">
                     <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Compliance Score</p>
                     <div className="mt-2 flex items-baseline gap-1.5">
-                      <span className="text-3xl font-bold text-white">{score}</span>
+                      <span className="text-3xl font-bold text-slate-900">{score}</span>
                       <span className="text-sm font-medium text-slate-500">/ 100</span>
                     </div>
                   </div>
                 </div>
                 <div className="p-6">
-                  <p className="text-sm leading-relaxed text-slate-300">
+                  <p className="text-sm leading-relaxed text-slate-600">
                     {bidderData.latest_verification?.recommendation || "System analyzed documents. Refer to individual flags for details."}
                   </p>
                 </div>
@@ -324,19 +324,19 @@ export default function BidderDetails() {
             <SectionHeading title="What Needs Attention" icon={ShieldAlert} />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {activeMismatches.length === 0 ? (
-                <div className="col-span-full rounded-xl border border-emerald-800/30 bg-emerald-950/20 p-6 flex items-center justify-center">
-                  <p className="text-emerald-400 font-medium">No active compliance flags. All issues resolved or verified.</p>
+                <div className="col-span-full rounded-xl border border-emerald-200 bg-emerald-50 p-6 flex items-center justify-center">
+                  <p className="text-emerald-600 font-medium">No active compliance flags. All issues resolved or verified.</p>
                 </div>
               ) : (
                 activeMismatches.map((check, idx) => (
-                  <div key={idx} className="flex flex-col justify-between rounded-xl border border-red-800/40 bg-red-950/20 p-4">
+                  <div key={idx} className="flex flex-col justify-between rounded-xl border border-red-200 bg-red-50 p-4">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <AlertTriangle className="h-5 w-5 text-red-400" />
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
                         <StatusBadge status="MISMATCH" />
                       </div>
-                      <h3 className="mt-3 text-sm font-semibold text-slate-200">{check.check}</h3>
-                      <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{check.reason}</p>
+                      <h3 className="mt-3 text-sm font-semibold text-slate-800">{check.check}</h3>
+                      <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{check.reason}</p>
                     </div>
                   </div>
                 ))
@@ -344,14 +344,14 @@ export default function BidderDetails() {
             </div>
 
             {hasActiveFlags && (
-              <div className="mt-4 flex flex-col justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5 sm:flex-row sm:items-center">
+              <div className="mt-4 flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center shadow-sm">
                 <div>
-                  <h3 className="font-semibold text-white">Officer Review Required</h3>
-                  <p className="mt-1 text-sm text-slate-400">Review the flagged checks before making a procurement decision.</p>
+                  <h3 className="font-semibold text-slate-900">Officer Review Required</h3>
+                  <p className="mt-1 text-sm text-slate-500">Review the flagged checks before making a procurement decision.</p>
                 </div>
                 <button
                   onClick={() => navigate(`/officer-review/${bidderId}`)}
-                  className="inline-flex shrink-0 items-center justify-center rounded-lg bg-indigo-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400"
+                  className="inline-flex shrink-0 items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-sm"
                 >
                   Open Review
                 </button>
@@ -362,19 +362,19 @@ export default function BidderDetails() {
           {/* COMPLIANCE VERIFICATION TABLE */}
           <Reveal className="mb-8">
             <SectionHeading title="Compliance Verification" icon={ClipboardList} description="Verification results across statutory requirements." />
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 shadow-sm overflow-hidden overflow-x-auto">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/80 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-5 py-3 whitespace-nowrap">Check</th>
                     <th className="px-5 py-3 whitespace-nowrap">Status</th>
                     <th className="px-5 py-3 w-1/2">Reason / Evidence</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-slate-100">
                   {realChecks.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="px-5 py-8 text-center text-slate-400">
+                      <td colSpan="3" className="px-5 py-8 text-center text-slate-500">
                         No verification has been run yet. Please upload documents.
                       </td>
                     </tr>
@@ -382,10 +382,10 @@ export default function BidderDetails() {
                     realChecks.map((check, idx) => {
                       const displayStatus = getDisplayStatus(check);
                       return (
-                        <tr key={idx} className="transition-colors hover:bg-slate-800/30">
-                          <td className="px-5 py-4 font-medium text-slate-200">{check.check}</td>
+                        <tr key={idx} className="transition-colors hover:bg-slate-50">
+                          <td className="px-5 py-4 font-medium text-slate-900">{check.check}</td>
                           <td className="px-5 py-4"><StatusBadge status={displayStatus} /></td>
-                          <td className="px-5 py-4 text-slate-400">{check.reason || "Matches expected values"}</td>
+                          <td className="px-5 py-4 text-slate-600">{check.reason || "Matches expected values"}</td>
                         </tr>
                       );
                     })
@@ -398,15 +398,15 @@ export default function BidderDetails() {
           {/* DETECTED INCONSISTENCY BOX (Only shows if open flags exist) */}
           {activeMismatches.map((mismatch, idx) => (
             <Reveal key={`mismatch-${idx}`} className="mb-8">
-              <div className="rounded-xl border border-red-900/50 bg-red-950/10 p-5 sm:p-6">
+              <div className="rounded-xl border border-red-200 bg-white p-5 sm:p-6 shadow-sm">
                 <div className="mb-5 flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
-                  <h3 className="text-base font-semibold text-red-400">Detected Inconsistency: {mismatch.check}</h3>
+                  <h3 className="text-base font-semibold text-red-600">Detected Inconsistency: {mismatch.check}</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">System Reasoning</p>
-                    <p className="mt-2 text-sm font-medium text-slate-200">{mismatch.reason}</p>
+                    <p className="mt-2 text-sm font-medium text-slate-900">{mismatch.reason}</p>
                   </div>
                 </div>
               </div>
@@ -415,13 +415,13 @@ export default function BidderDetails() {
 
           {/* DOCUMENT UPLOAD LAUNCHER */}
           <Reveal>
-            <div className="mt-8 flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-8 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               
               {/* Audit & Verification Actions */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => navigate(`/tenders/${tenderId}/bidders/${bidderId}/verify`)}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-700 transition-all"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
                 >
                   <Activity className="h-4 w-4" />
                   Re-Run Verification
@@ -430,7 +430,7 @@ export default function BidderDetails() {
                 {/* Audit Trail Button */}
                 <button
                   onClick={() => navigate(`/tenders/${tenderId}/audit-trail/${bidderId}`)}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-700 transition-all"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
                 >
                   <ClipboardList className="h-4 w-4" />
                   View Audit Trail

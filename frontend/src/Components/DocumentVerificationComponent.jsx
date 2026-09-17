@@ -206,7 +206,7 @@ export default function DocumentVerification() {
           <div className="mt-2 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
             <div>
               <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">Document Verification Lab</h1>
-              <p className="mt-1 max-w-2xl text-sm text-slate-500">Upload new documents to actively re-run AI compliance checks.</p>
+              <p className="mt-1 max-w-2xl text-sm text-slate-500">Upload new documents to actively re-run compliance checks.</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold tracking-wide text-emerald-700">
@@ -381,14 +381,14 @@ export default function DocumentVerification() {
             </SectionCard>
           )}
           {/* AI VERIFICATION RESULTS */}
-          <SectionCard title="AI Verification Results" description="Results generated from the AI Engine after processing." icon={ClipboardList}>
+          <SectionCard title="Verification Results" description="Results generated from the AI Engine after processing." icon={ClipboardList}>
             <div className="overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-left text-sm text-slate-600">
                 <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Document Check</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">AI Reasoning</th>
+                    <th className="px-4 py-3">Reasoning</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -397,7 +397,7 @@ export default function DocumentVerification() {
                       <td colSpan="3" className="px-4 py-12 text-center">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
-                          <p className="text-sm font-medium text-slate-500 animate-pulse">Running AI Compliance Checks against Government Databases...</p>
+                          <p className="text-sm font-medium text-slate-500 animate-pulse">Running Compliance Checks against Government Databases...</p>
                         </div>
                       </td>
                     </tr>

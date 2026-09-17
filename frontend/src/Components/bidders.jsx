@@ -355,22 +355,25 @@ const Bidders = () => {
     <main className="min-h-screen bg-slate-50 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {/* Page header */}
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <button
-  type="button"
-  onClick={() => navigate("/tenders")}
-  className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 rounded-md"
->
-  <ArrowLeft className="h-4 w-4" size={16} aria-hidden="true" />
-  Back to Tenders
-</button>
+        <div>
 
-<div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-  <div></div>
+        <button
+          type="button"
+          onClick={() => navigate("/tenders")}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 rounded-md"
+          >
+          <ArrowLeft className="h-4 w-4" size={16} aria-hidden="true" />
+          Back to Tenders
+        </button>
+
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+          <div></div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Bidders</h1>
           <p className="mt-1 text-sm text-slate-500">
             Review bidder compliance, risk, and verification status for the selected tender.
           </p>
         </div>
+          </div>
 
         <span
           className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-semibold tracking-[0.08em] text-emerald-700"
